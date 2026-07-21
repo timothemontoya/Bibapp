@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Bibapp</title>
+  
+  <!-- Configuration PWA pour iPhone -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Bibsapp">
+  <link rel="apple-touch-icon" href="assets/icon.png"> <!-- METTRE TON ICÔNE D'APPLICATION ICI -->
+  
+  <link rel="stylesheet" href="style.css">
+
+  <!-- SDK Supabase & EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+
+  
+
+  <!-- Conteneur principal (Taille iPhone) -->
+  <div class="app-container">
+    
+    <!-- ========================================== -->
+    <!-- ÉCRAN 1 : ACCUEIL                          -->
+    <!-- ========================================== -->
+    <section id="view-accueil" class="app-view active">
+      <header class="view-header">
+        <div class="theme-toggle" onclick="toggleNightMode()" id="night-mode-button" aria-label="Mode nuit">
+          <span class="theme-dot">🌙</span>
+        </div>
+        <h1>BIBAPP</h1>
+        <div class="streak-badge">
+          🔥 <span id="streak-count">0</span>
+        </div>
+      </header>
+
+      <div class="scroll-content">
+        <!-- Widget Boîte à Douceurs -->
+        <div class="card widget-box" onclick="openDailyBox()">
+          <div class="blender-placeholder">
+            <img src="assets/boite-douceurs-fermee.webp" alt="Boîte 3D" class="blender-media" onerror="this.style.display='none'">
+            <span class="fallback-icon">💌</span>
+          </div>
+          <div class="widget-info">
+            <h3>Boîte à douceurs</h3>
+            <p id="box-status-text">Clique pour ouvrir ton mot doux du jour !</p>
+          </div>
+        </div>
+
+        <!-- Widget Roulette Repas -->
+        <div class="card roulette-widget">
+          <button id="btn-toggle-config" class="btn-toggle-config" onclick="toggleConfigPanel()">🖌️</button>
+
+          <h3>La Roulette Repas 🍕</h3>
+          
+          <div class="wheel-container">
+            <div class="wheel-pointer">▼</div>
+            <div id="wheel" class="wheel"></div>
+          </div>
+          
+          <div class="roulette-controls">
+            <button id="btn-spin" class="btn-primary" onclick="spinWheel()">Tourner la roue !</button>
+          </div>
+          <p id="roulette-result" class="roulette-result"></p>
+
+          <!-- Panneau de configuration (Overlay) -->
+          <div id="roulette-config" class="roulette-config">
+            <h4>Ajouter ou désactiver des idées :</h4>
+            <ul id="roulette-list" class="roulette-list"></ul>
+            
+            <div class="roulette-add-form">
+              <input type="text" id="input-new-plat" placeholder="Ajouter une idée..." maxlength="15">
+              <button onclick="addCustomPlat()" class="btn-add">Ajouter</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ÉCRAN 2 : DATES SECRETS                    -->
+    <!-- ========================================== -->
+    <section id="view-dates" class="app-view">
+      <div class="dates-header-sticky">
+        <div class="dates-top">
+          <div class="view-header">
+            <h1>DATES SECRETS 🤫</h1>
+          </div>
+
+          <!-- Onglets de navigation (Segmented Control) -->
+          <div class="segmented-control">
+            <button class="segment-btn active" onclick="switchSubTab('hidden', this)">Cachés 🫣</button>
+            <button class="segment-btn" onclick="switchSubTab('todo', this)">À Faire 🗓️</button>
+            <button class="segment-btn" onclick="switchSubTab('done', this)">Faits 🥰</button>
+          </div>
+
+          <!-- Filtres de catégories -->
+          <div class="categories-filter-container">
+            <button class="btn-secondary btn-categories-toggle" onclick="showCategoriesOverlay()">
+              Catégories
+              <span id="selected-categories-count" class="categories-count">0</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="categories-overlay" class="categories-overlay" aria-hidden="true">
+          <div class="categories-overlay-backdrop" onclick="hideCategoriesOverlay()"></div>
+          <div class="categories-overlay-panel">
+            <div class="categories-overlay-header">
+              <div>
+                <p class="overlay-title">Toutes les catégories</p>
+                <p class="overlay-subtitle">Choisis ce que tu veux voir.</p>
+              </div>
+              <button class="btn-close-overlay" onclick="hideCategoriesOverlay()">✕</button>
+            </div>
+            <div id="categories-checkboxes" class="categories-list"></div>
+            <div class="categories-overlay-actions">
+              <button class="btn-secondary" onclick="clearCategoryFilters()">Tout réinitialiser</button>
+              <button class="btn-primary" onclick="hideCategoriesOverlay()">Valider</button>
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+      <!-- Grille des cartes -->
+        <div id="dates-grid" class="dates-grid">
+          <!-- Généré dynamiquement en JS -->
+        </div>
+      <!-- Bouton Random -->
+      <button class="btn-random-heart" onclick="triggerRandomDate()" title="Tirer une activité au sort !">
+        <span class="heart-icon">❤️</span>
+        <span class="question-mark-overlay">?</span>
+      </button>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ÉCRAN 3 : MES BONS                         -->
+    <!-- ========================================== -->
+    <section id="view-bons" class="app-view">
+      <header class="view-header">
+        <h1>Mes Super Pouvoirs ⚡</h1>
+      </header>
+      
+      <div class="scroll-content">
+        <div class="tokens-list" id="tokens-list">
+          <!-- Généré dynamiquement en JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- BARRE DE NAVIGATION (BOTTOM BAR)           -->
+    <!-- ========================================== -->
+    <nav class="nav-bar">
+      <button class="nav-item active" onclick="switchTab('view-accueil', this)">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Accueil</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('view-dates', this)">
+        <span class="nav-icon">🔒</span>
+        <span class="nav-label">Dates</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('view-bons', this)">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">Bons surprise</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODALES GLOBALES                           -->
+  <!-- ========================================== -->
+
+  <!-- Pop-up du Message Quotidien (Boîte à douceurs) -->
+  <div id="daily-modal" class="modal">
+    <div class="modal-content">
+      <div class="blender-placeholder-mini">
+        <img src="assets/boite-douceurs-ouverte.webp" alt="Boîte animée 3D" class="blender-media" onerror="this.style.display='none'">
+        <span class="fallback-icon">🎁</span>
+      </div>
+      <h2>Ton mot doux du jour</h2>
+      <p id="daily-message-text">Chargement de ta surprise...</p>
+      <button class="btn-primary" onclick="closeDailyModal()">Merci mon amour ❤️</button>
+    </div>
+  </div>
+
+  <!-- Modal Grattage Ticket -->
+  <div id="scratch-modal" class="custom-modal-overlay">
+    <div class="scratch-card-box">
+      <div class="scratch-card-header">
+        <h2>✨ Ton Ticket Surprise ✨</h2>
+        <p>Gratte l'écran avec ton doigt pour découvrir ton pouvoir ! 🪙</p>
+      </div>
+      <div class="scratch-area-wrapper">
+        <div class="scratch-prize-underlay">
+          <span id="scratch-prize-icon">🎁</span>
+          <h3 id="scratch-prize-title">Chargement...</h3>
+        </div>
+        <canvas id="scratch-canvas"></canvas>
+      </div>
+      <button id="btn-close-scratch" class="btn-primary" style="display: none;" onclick="closeScratchModal()">
+        🎉 Ranger dans ma Boîte à Bons !
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Marquer Date Comme Fait -->
+  <div id="complete-date-modal" class="custom-modal-overlay">
+    <div class="memory-form-box">
+      <h2>🎉 Date Réalisé !</h2>
+      <p>Créez votre souvenir pour graver ce moment dans votre journal :</p>
+      
+      <div class="form-group">
+        <label>📸 Ajouter une Photo (souvenir) :</label>
+        <input type="file" id="memory-photo-input" accept="image/*" onchange="previewMemoryPhoto(event)">
+        <div class="photo-preview-container">
+          <img id="memory-photo-preview" src="" style="display: none; width: 100%; border-radius: 12px; margin-top: 10px;">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>⭐ Ta Note :</label>
+        <div class="star-rating" id="memory-rating">
+          <span class="star" data-value="1">★</span>
+          <span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span>
+          <span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>💬 Son Commentaire / Ressenti :</label>
+        <input type="text" id="memory-comment" placeholder="Ex: Une de mes meilleures soirées !">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeCompleteModal()">Annuler</button>
+        <button class="btn-primary" onclick="saveDateMemory()">Enregistrer ce Souvenir 💖</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Voir un Souvenir -->
+  <div id="view-memory-modal" class="custom-modal-overlay">
+    <div class="memory-display-box">
+      <span class="close-memory-btn" onclick="closeViewMemoryModal()">❌</span>
+      <h2 id="view-mem-title">Titre du Date</h2>
+      <p id="view-mem-date" class="mem-date-label">Fait le DD/MM/YYYY</p>
+      
+      <div id="view-mem-photo-wrapper">
+        <img id="view-mem-photo" src="" alt="Notre Souvenir">
+      </div>
+
+      <div class="mem-content-section">
+        <h4>⭐ Note :</h4>
+        <p id="view-mem-note" class="stars-display">Pas encore notée.</p>
+      </div>
+
+      <div class="mem-content-section">
+        <h4>💬 Ressenti :</h4>
+        <p id="view-mem-comment" class="quote-text">Aucun commentaire.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <div id="toast-container" class="toast-container"></div>
+  <!-- Overlay d'arrière-plan flouté pour le focus des cartes -->
+  <div id="overlay" class="overlay"></div>
+</body>
+</html>

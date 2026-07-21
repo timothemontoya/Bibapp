@@ -1,0 +1,23 @@
+[
+  {
+    "id": "bon-massage",
+    "icon": "💆‍♀️",
+    "title": "Bon pour un massage",
+    "cooldown_hours": 24,
+    "is_scratchable": true
+  },
+  {
+    "id": "bon-petitdej",
+    "icon": "🥐",
+    "title": "Petit-déjeuner au lit",
+    "cooldown_hours": 48,
+    "is_scratchable": false
+  },
+  {
+    "id": "bon-joker",
+    "icon": "🃏",
+    "title": "Joker : Annule une dispute",
+    "cooldown_hours": 720,
+    "is_scratchable": true
+  }
+]

@@ -1,0 +1,138 @@
+[
+  {
+    "id": "date-card-1",
+    "title": "Cabane Cosy",
+    "email_title": "Cabane Cosy de Salon",
+    "category": "Chill 🍿",
+    "description": "Ce soir on construit un fort géant avec des draps dans le salon, et on y regarde un film !",
+    "options": ["Pop-corn Sucré", "Pop-corn Salé"],
+    "theme": "pink-theme"
+  },
+  {
+    "id": "date-card-2",
+    "title": "Dîner surprise",
+    "email_title": "Dîner aux chandelles improvisé",
+    "category": "Romantique 🕯️",
+    "description": "Je m'occupe de cuisiner un repas gastronomique secret. Mets ta plus jolie tenue !",
+    "options": ["Vin Rouge", "Champagne"],
+    "theme": "red-theme"
+  },
+  {
+    "id": "date-card-3",
+    "title": "Yoga en duo",
+    "email_title": "Yoga en duo",
+    "category": ["Chill 🍿"],
+    "description": "On se lance dans une séance de yoga en duo pour se détendre et on doit se prendre en photo sur certaines figures drôles.",
+    "theme": "red-theme"
+  },
+  {
+    "id": "date-card-4",
+    "title": "Stargazing Night",
+    "email_title": "Stargazing Night",
+    "category": ["Chill 🍿", "Nuit 🌙", "Exterieur 🏞️"],
+    "description": "On sort les couvertures et on va observer les étoiles !",
+    "theme": "purple-theme"
+  },
+  {
+    "id": "date-card-5",
+    "title": "Soirée débat",
+    "email_title": "Soirée débat",
+    "category": ["Nuit 🌙", "Discussion 💭"],
+    "description": "On choisit un sujet et on débat pendant 30 minutes, puis on change de sujet.",
+    "theme": "white-theme"
+  },
+  {
+    "id": "date-card-6",
+    "title": "Barman à la maison",
+    "email_title": "Barman à la maison",
+    "category": ["Maison 🏠"],
+    "description": "On se transforme en barman et on prépare des cocktails pour l'autre.",
+    "theme": "green-theme"
+  }
+  ,
+  {
+    "id": "date-card-7",
+    "title": "Voyage aveugle",
+    "email_title": "Voyage aveugle",
+    "category": ["Voayge ✈️", "Aventure 🏕️"],
+    "description": "On se rend dans une ville ou un village proche qu'on ne connait pas et on le visite toute la journée.",
+    "theme": "blue-theme"
+  },
+  {
+    "id": "date-card-8",
+    "title": "Parc d'attractions",
+    "email_title": "Parc d'attractions",
+    "category": ["Aventure 🏕️"],
+    "description": "On choisit un parc d'attractions et on y passe la journée.",
+    "theme": "yellow-theme"
+  },
+  {
+    "id": "date-card-9",
+    "title": "Cours de danse",
+    "email_title": "Cours de danse",
+    "category": ["Sportif 🏋️‍♂️", "Découverte 💫"],
+    "description": "On prend ou fait un cours de danse ensemble de n'importe quel style.",
+    "theme": "yellow-theme"
+  },
+  {
+    "id": "date-card-10",
+    "title": "Binge-wasabiching Night",
+    "email_title": "Binge-wasabiching Night",
+    "category": ["Chill 🍿"],
+    "description": "On commande des sushis et on commence un nouvel anime.",
+    "theme": "red-theme"
+  },
+  {
+    "id": "date-card-11",
+    "title": "Dans tout les sens",
+    "email_title": "Dans tout les sens",
+    "category": ["Erotique 🔞"],
+    "description": "On choisit 3 positions sexuelles et on doit les faire.",
+    "theme": "red-theme"
+  },
+  {
+    "id": "date-card-12",
+    "title": "Trempés !",
+    "email_title": "Trempés !",
+    "category": ["Exterieur 🏞️", "Activité 🏄‍♀²"],
+    "description": "On va dans un parc aquatique toute la journée!",
+    "theme": "blue-theme"
+  },
+  {
+    "id": "date-card-13",
+    "title": "Corps au trésor ",
+    "email_title": "Corps au trésor ",
+    "category": ["Erotique 🔞"],
+    "description": "On se cache des gommettes sur le corps et l'autre doit les trouver les yeux bandés.",
+    "theme": "red-theme"
+  },
+  {
+    "id": "date-card-14",
+    "title": "Shooting photo",
+    "email_title": "Shooting photo ",
+    "category": ["Erotique 🔞"],
+    "description": "Pile tu es un photographe, face tu es  mannequin. Le photographe est le maestro.",
+    "theme": "red-theme"
+  },
+  {
+    "id": "date-card-15",
+    "title": "Karaoké !",
+    "email_title": "Karaoké !",
+    "category": ["Chill 🍿"],
+    "description": "On se fait une soirée de karaoké, dedans ou dans un bar et on donne tout !",
+    "theme": "yellow-theme"
+  },
+  {
+    "id": "date-card-16",
+    "title": "Un peu de culture",
+    "email_title": "Un peu de culture",
+    "category": ["Découverte 💫"],
+    "description": "On se fait une visite d'un musée ou d'une exposition.",
+    "theme": "yellow-theme"
+  }
+
+
+
+
+
+]

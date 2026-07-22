@@ -20,6 +20,7 @@ emailjs.init(EMAILJS_PUBLIC_KEY);
 // ==========================================
 let activeSubTab = 'hidden'; // 'hidden', 'todo', 'done'
 let selectedCategories = [];
+let categoryMatchMode = 'any';
 let cardsStateMap = {}; // État des cartes en temps réel
 let tempCompletedCardId = null; 
 let loadedPhotoBase64 = null; 
@@ -295,10 +296,7 @@ function genererCartesDates() {
     else if (activeSubTab === 'todo') { if (!state || !state.is_revealed || state.is_completed) return false; }
     else if (activeSubTab === 'done') { if (!state || !state.is_completed) return false; }
 
-    if (selectedCategories.length > 0) {
-      const itemCategories = Array.isArray(date.category) ? date.category : [date.category];
-      if (!itemCategories.some(cat => selectedCategories.includes(cat))) return false;
-    }
+    if (!dateMatchesCategoryFilter(date)) return false;
     return true;
   });
 
@@ -325,6 +323,20 @@ function genererCartesDates() {
     `;
     grid.insertAdjacentHTML('beforeend', cardHtml);
   });
+}
+
+function setCategoryMatchMode(mode) {
+  categoryMatchMode = mode;
+  genererCartesDates();
+}
+
+function dateMatchesCategoryFilter(date) {
+  if (selectedCategories.length === 0) return true; // rien coché = tout passe
+  const itemCategories = Array.isArray(date.category) ? date.category : [date.category];
+  if (categoryMatchMode === 'all') {
+    return selectedCategories.every(cat => itemCategories.includes(cat));
+  }
+  return itemCategories.some(cat => selectedCategories.includes(cat));
 }
 
 // ==========================================
@@ -394,7 +406,8 @@ function sendLoveEmail(dateName) {
 // 🎲 BOUTON RANDOM MAGIQUE (CŒUR + ?)
 // ==========================================
 async function triggerRandomDate() {
-  const pool = datesData; 
+  if (activeCardId) closeActiveCard();
+  const pool = datesData.filter(dateMatchesCategoryFilter);
   if (pool.length === 0) return;
 
   const randomDate = pool[Math.floor(Math.random() * pool.length)];

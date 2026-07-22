@@ -43,12 +43,11 @@
         <!-- Widget Boîte à Douceurs -->
         <div class="card widget-box" onclick="openDailyBox()">
           <div class="blender-placeholder">
-            <img src="assets/boite-douceurs-fermee.webp" alt="Boîte 3D" class="blender-media" onerror="this.style.display='none'">
             <span class="fallback-icon">💌</span>
           </div>
           <div class="widget-info">
             <h3>Boîte à douceurs</h3>
-            <p id="box-status-text">Clique pour ouvrir ton mot doux du jour !</p>
+            <p id="box-status-text">Chaque jour, une raison de t'aimmer</p>
           </div>
         </div>
 
@@ -119,6 +118,16 @@
               <button class="btn-close-overlay" onclick="hideCategoriesOverlay()">✕</button>
             </div>
             <div id="categories-checkboxes" class="categories-list"></div>
+            <div class="categories-match-mode">
+              <label>
+                <input type="radio" name="cat-match-mode" value="any" checked onchange="setCategoryMatchMode(this.value)">
+                Au moins une catégorie
+              </label>
+              <label>
+                <input type="radio" name="cat-match-mode" value="all" onchange="setCategoryMatchMode(this.value)">
+                Toutes les catégories choisies
+              </label>
+            </div>
             <div class="categories-overlay-actions">
               <button class="btn-secondary" onclick="clearCategoryFilters()">Tout réinitialiser</button>
               <button class="btn-primary" onclick="hideCategoriesOverlay()">Valider</button>

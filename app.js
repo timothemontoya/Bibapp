@@ -111,7 +111,7 @@ function initAppEvents() {
   const overlay = document.getElementById('overlay');
   if (!grid) return;
 
-  grid.addEventListener('click', function(e) {
+  document.addEventListener('click', function(e) {
     const cardWrapper = e.target.closest('.card-wrapper');
     if (!cardWrapper) return;
 

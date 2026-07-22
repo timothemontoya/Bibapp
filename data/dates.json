@@ -54,7 +54,7 @@
     "id": "date-card-7",
     "title": "Voyage aveugle",
     "email_title": "Voyage aveugle",
-    "category": ["Voyage ✈️", "Aventure 🏕️"],
+    "category": ["Voyage ✈️", "Aventure 🧭"],
     "description": "On se rend dans une ville ou un village proche qu'on ne connait pas et on le visite toute la journée.",
     "theme": "blue-theme"
   },
@@ -62,7 +62,7 @@
     "id": "date-card-8",
     "title": "Parc d'attractions",
     "email_title": "Parc d'attractions",
-    "category": ["Aventure 🏕️"],
+    "category": ["Aventure 🧭"],
     "description": "On choisit un parc d'attractions et on y passe la journée.",
     "theme": "yellow-theme"
   },
@@ -94,7 +94,7 @@
     "id": "date-card-12",
     "title": "Trempés !",
     "email_title": "Trempés !",
-    "category": ["Exterieur 🏞️", "Activité 🏄‍♀²"],
+    "category": [],
     "description": "On va dans un parc aquatique toute la journée!",
     "theme": "blue-theme"
   },

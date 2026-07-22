@@ -7,20 +7,6 @@ const EMAILJS_PUBLIC_KEY = "TA_CLE_PUBLIQUE_EMAILJS";
 const EMAILJS_SERVICE_ID = "TON_SERVICE_ID_EMAILJS";
 const EMAILJS_TEMPLATE_ID = "TON_TEMPLATE_ID_EMAILJS";
 
-const CATEGORY_CONFIG = {
-  'Romantique':  { emoji: '💐', special: true },
-  'Sportif':     { emoji: '🏋️', special: false },
-  'Découverte':  { emoji: '🔄', special: false },
-  'Erotique':    { emoji: '🔞', special: true },
-  'Chill':       { emoji: '🍿', special: false },
-  'Aventure':    { emoji: '🏕️', special: true },
-  'Voyage':      { emoji: '✈️', special: false },
-  'Nuit':        { emoji: '🌙', special: true },
-  'Extérieur':   { emoji: '🌆', special: false },
-  'Maison':      { emoji: '🏠', special: false },
-  'Discussion':  { emoji: '💬', special: false },
-  'Activité':    { emoji: '🧘', special: false },
-};
 
 const CATEGORY_GRADIENTS = {
   "Chill": "linear-gradient(135deg, #FF6B6B, #ff8f5321)",
@@ -227,11 +213,18 @@ async function chargerBons() {
 // 🎛️ FILTRES DE CATÉGORIES
 // ==========================================
 function parseCategory(categoryString) {
-  const chars = Array.from(categoryString.trim());
-  if (chars.length === 0) return { text: "", emoji: "" };
+  if (!categoryString) return { text: '', emoji: '' };
 
-  const emoji = chars.pop(); // Récupère le dernier caractère (l'émoji)
-  const text = chars.join('').trim(); // Récupère le reste du texte
+  const trimmed = categoryString.trim();
+
+  // Découpe intelligemment en graphèmes (gère les émojis complexes, ZWJ, drapeaux, etc.)
+  const segmenter = new Intl.Segmenter('fr', { granularity: 'grapheme' });
+  const segments = Array.from(segmenter.segment(trimmed), s => s.segment);
+
+  if (segments.length === 0) return { text: '', emoji: '' };
+
+  const emoji = segments.pop(); // Récupère le dernier émoji complet à 100%
+  const text = segments.join('').trim(); // Récupère le reste du texte sans le casser
 
   return { text, emoji };
 }

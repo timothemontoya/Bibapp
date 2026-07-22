@@ -16,7 +16,7 @@
   {
     "id": "bon-joker",
     "icon": "🃏",
-    "title": "Joker : Annule une dispute",
+    "title": "Annule une dispute",
     "cooldown_hours": 720,
     "is_scratchable": true
   }

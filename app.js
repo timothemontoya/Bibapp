@@ -80,7 +80,9 @@ function createCardPlaceholder(cardWrapper) {
 function removeCardPlaceholder(cardWrapper) {
   if (!cardWrapper || cardWrapper.dataset.hasPlaceholder !== 'true') return;
   const placeholder = document.querySelector(`.card-placeholder[data-placeholder-for="${cardWrapper.id}"]`);
-  if (placeholder) placeholder.remove();
+  // On remet la carte à sa place d'origine dans la grille (elle avait été
+  // déplacée dans <body> pour échapper au conteneur scrollable sur mobile)
+  if (placeholder) placeholder.replaceWith(cardWrapper);
   delete cardWrapper.dataset.hasPlaceholder;
 }
 
@@ -127,6 +129,7 @@ function initAppEvents() {
 
     // Zoom et mise au centre de la carte
     createCardPlaceholder(cardWrapper);
+    document.body.appendChild(cardWrapper);
     activeCardId = cardWrapper.id;
     cardWrapper.classList.add('focused');
     
@@ -405,6 +408,8 @@ async function triggerRandomDate() {
     const element = document.getElementById(randomDate.id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      createCardPlaceholder(element);        // ← ajouté
+      document.body.appendChild(element);
       element.classList.add('focused');
       document.getElementById('overlay').classList.add('active');
       activeCardId = randomDate.id;
@@ -525,10 +530,7 @@ async function saveDateMemory() {
   closeCompleteModal();
   
   if (activeCardId) {
-    const card = document.getElementById(activeCardId);
-    if (card) card.classList.remove('focused');
-    document.getElementById('overlay').classList.remove('active');
-    activeCardId = null;
+    closeActiveCard();
   }
 
   await syncCardsState();
@@ -782,7 +784,7 @@ async function renderInventory() {
               <p style="font-size: 12px; color: var(--text-secondary); margin: 2px 0 0 0;">Quantité : <strong>x${qty}</strong></p>
             </div>
           </div>
-          <button class="btn-primary" onclick="useInventoryToken('${bon.id}')" style="padding: 8px 16px; font-size: 13px; border-radius: 10px;">Utiliser ✨</button>
+          <button class="btn-primary" onclick="useInventoryToken('${bon.id}')" style="padding: 8px 16px; font-size: 13px; border-radius: 10px; width: 8em;">Utiliser ✨</button>
         </div>
       </div>
     `;

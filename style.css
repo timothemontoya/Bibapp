@@ -396,68 +396,36 @@ body {
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04); pointer-events: none;
 }
 .card-wrapper {
-  position: relative;
-  height: 220px;
-  /* On applique la perspective de manière fluide pour Safari/Firefox */
-  -webkit-perspective: 1000px;
-  perspective: 1000px;
+  position: relative; height: 220px; perspective: 1000px;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
   z-index: 1;
 }
-
 .card-inner {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  /* PRÉFIXE WEBKIT OBLIGATOIRE POUR SAFARI */
-  -webkit-transform-style: preserve-3d;
-  transform-style: preserve-3d;
+  width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
   transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.2);
-  border-radius: 24px;
-  box-shadow: var(--shadow);
+  border-radius: 24px; box-shadow: var(--shadow);
 }
 
 /* Comportement focus et retournement */
 .card-wrapper.focused {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  width: 310px;
-  height: 410px;
-  
-  /* translate3d avec Z à 500px force le GPU Safari/Firefox à mettre la carte AU-DESSUS de l'overlay */
-  -webkit-transform: translate3d(-50%, -50%, 500px) !important;
-  transform: translate3d(-50%, -50%, 500px) !important;
-  
+  position: fixed; top: 50%; left: 50%;
+  width: 310px; height: 410px;
+  transform: translate(-50%, -50%);
   z-index: 10000 !important;
-  -webkit-perspective: none; /* Désactive la perspective parente en mode focus */
-  perspective: none;
-  
   animation: zoomInCenter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  will-change: transform;
+  isolation: isolate; /* Assure que l'élément est isolé pour les transformations 3D */
 }
-
 .card-wrapper.focused .btn-confirm-flip { display: block; animation: bounce 0.6s infinite alternate; }
 .card-wrapper.flipped .card-inner { transform: rotateY(180deg); }
 .card-wrapper.flipped .btn-confirm-flip { display: none; }
 .card-wrapper.shake-locked .card-inner { animation: shake-locked 0.6s ease; }
 
 .card-front, .card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  /* PRÉFIXES OBLIGATOIRES POUR SAFARI & FIREFOX */
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  border-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 15px;
-  box-sizing: border-box;
+  position: absolute; width: 100%; height: 100%;
+  backface-visibility: hidden; border-radius: 24px;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 15px; box-sizing: border-box;
 }
-
 .card-front { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color: white; }
 .card-back { background: var(--card-bg); color: var(--text-primary); transform: rotateY(180deg); text-align: center; justify-content: space-between; }
 .card-back.pink-theme { border: 3px solid var(--ios-pink); }
@@ -604,29 +572,10 @@ body {
   from { transform: scale(0.8); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
-
-@-webkit-keyframes zoomInCenter {
-  from { 
-    -webkit-transform: translate3d(-50%, -50%, 500px) scale(0.5); 
-    opacity: 0; 
-  }
-  to { 
-    -webkit-transform: translate3d(-50%, -50%, 500px) scale(1); 
-    opacity: 1; 
-  }
-}
-
 @keyframes zoomInCenter {
-  from { 
-    transform: translate3d(-50%, -50%, 500px) scale(0.5); 
-    opacity: 0; 
-  }
-  to { 
-    transform: translate3d(-50%, -50%, 500px) scale(1); 
-    opacity: 1; 
-  }
+  from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
-
 @keyframes shake-locked {
   0%, 100% { transform: translateX(0) rotate(0deg); }
   15% { transform: translateX(-8px) rotate(-3deg); }

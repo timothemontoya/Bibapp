@@ -10,12 +10,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Bibapp">
   <link rel="apple-touch-icon" href="assets/icon.png"> <!-- METTRE TON ICÔNE D'APPLICATION ICI -->
-  
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/bold.css"/>
   <link rel="stylesheet" href="style.css">
 
   <!-- SDK Supabase & EmailJS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 
@@ -30,11 +31,11 @@
     <section id="view-accueil" class="app-view active">
       <header class="view-header">
         <div class="theme-toggle" onclick="toggleNightMode()" id="night-mode-button" aria-label="Mode nuit">
-          <span class="theme-dot">🌙</span>
+          <span class="theme-dot"><i class="ph-fill ph-moon icon-emoji"></i></span>
         </div>
         <h1>BIBAPP</h1>
         <div class="streak-badge">
-          🔥 <span id="streak-count">0</span>
+          <i class="ph-fill ph-fire icon-emoji"></i> <span class="streak-count" id="streak-count">0</span>
         </div>
       </header>
 
@@ -53,9 +54,9 @@
 
         <!-- Widget Roulette Repas -->
         <div class="card roulette-widget">
-          <button id="btn-toggle-config" class="btn-toggle-config" onclick="toggleConfigPanel()">🖌️</button>
+          <button id="btn-toggle-config" class="btn-toggle-config" onclick="toggleConfigPanel()"><i class="ph ph-note-pencil icon-emoji"></i></button>
 
-          <h3>La Roulette Repas 🍕</h3>
+          <h3>La Roulette Repas <i data-lucide="pizza" class="icon-emoji"></i></h3>
           
           <div class="wheel-container">
             <div class="wheel-pointer">▼</div>
@@ -88,7 +89,7 @@
       <div class="dates-header-sticky">
         <div class="dates-top">
           <div class="view-header">
-            <h1>DATES SECRETS 🤫</h1>
+            <h1>DATES SECRETS</h1>
           </div>
 
           <!-- Onglets de navigation (Segmented Control) -->
@@ -158,15 +159,15 @@
     <!-- ========================================== -->
     <nav class="nav-bar">
       <button class="nav-item active" onclick="switchTab('view-accueil', this)">
-        <span class="nav-icon">🏠</span>
+        <span class="nav-icon"><i class="ph-duotone ph-house-line icon-emoji"></i></span>
         <span class="nav-label">Accueil</span>
       </button>
       <button class="nav-item" onclick="switchTab('view-dates', this)">
-        <span class="nav-icon">🔒</span>
+        <span class="nav-icon"><i class="ph-duotone ph-calendar-heart icon-emoji"></i></span>
         <span class="nav-label">Dates</span>
       </button>
       <button class="nav-item" onclick="switchTab('view-bons', this)">
-        <span class="nav-icon">⚡</span>
+        <span class="nav-icon"><i class="ph-duotone ph-ticket icon-emoji"></i></span>
         <span class="nav-label">Bons surprise</span>
       </button>
     </nav>

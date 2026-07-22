@@ -1083,7 +1083,7 @@ function updateNightModeIcon() {
   if (!button) return;
   const dot = button.querySelector('.theme-dot');
   if (!dot) return;
-  dot.textContent = document.documentElement.classList.contains('dark-mode') ? '☀️' : '🌙';
+  dot.innerHTML = document.documentElement.classList.contains('dark-mode') ? '<i class="ph-fill ph-sun icon-emoji"></i>' : '<i class="ph-fill ph-moon icon-emoji"></i>';
 }
 
 function loadDemoData() {

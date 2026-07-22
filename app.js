@@ -1,5 +1,5 @@
 // ==========================================
-// 🗝️ CONFIGURATION DES APIS
+// 🗝️ CONFIGURATION DES APIS & GLOBALES
 // ==========================================
 const SUPABASE_URL = "https://oooveysvgzeumrzbjlyd.supabase.co"; 
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vb3ZleXN2Z3pldW1yemJqbHlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMDc4MjQsImV4cCI6MjA5OTY4MzgyNH0.VLQli39DvPiw3CxeDHirRQ6dC7rHRRq15A-IdhkCRe8";
@@ -7,21 +7,41 @@ const EMAILJS_PUBLIC_KEY = "TA_CLE_PUBLIQUE_EMAILJS";
 const EMAILJS_SERVICE_ID = "TON_SERVICE_ID_EMAILJS";
 const EMAILJS_TEMPLATE_ID = "TON_TEMPLATE_ID_EMAILJS";
 
+const CATEGORY_CONFIG = {
+  'Romantique':  { emoji: '💐', special: true },
+  'Sportif':     { emoji: '🏋️', special: false },
+  'Découverte':  { emoji: '🔄', special: false },
+  'Erotique':    { emoji: '🔞', special: true },
+  'Chill':       { emoji: '🍿', special: false },
+  'Aventure':    { emoji: '🏕️', special: true },
+  'Voyage':      { emoji: '✈️', special: false },
+  'Nuit':        { emoji: '🌙', special: true },
+  'Extérieur':   { emoji: '🌆', special: false },
+  'Maison':      { emoji: '🏠', special: false },
+  'Discussion':  { emoji: '💬', special: false },
+  'Activité':    { emoji: '🧘', special: false },
+};
+
+const CATEGORY_GRADIENTS = {
+  "Chill": "linear-gradient(135deg, #FF6B6B, #ff8f5321)",
+  "Sportif": "linear-gradient(135deg, #8E2DE2, #4b00e028)",
+  "Découverte": "linear-gradient(135deg, #11998E, #38ef7e44)",
+  "Nuit": "linear-gradient(135deg, #F80759, #bc4e9d3f)",
+  "Voyage": "linear-gradient(135deg, #FF9900, #ff550044)",
+  "Erotique": "linear-gradient(135deg, #f83636, #000000c2)",
+};
+
+// Couleur/Dégradé par défaut si la catégorie n'est pas dans le dictionnaire
+const DEFAULT_GRADIENT = "linear-gradient(135deg, #0000ff77, #4169E1)"; // Bleu #0000FF
+
+const platsDeBase = ["Pizza 🍕", "Burger 🍔", "Sushis 🍣", "Pâtes 🍝", "Salade 🥗", "Tacos 🌮"];
+const paletteCouleurs = ['#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea', '#ffc6ff'];
+
 let supabaseClient = null;
-
-// Vérification de sécurité pour ne pas initialiser si on est sur la clé par défaut
-if (SUPABASE_URL !== "https://TON_PROJET.supabase.co") {
-  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
-emailjs.init(EMAILJS_PUBLIC_KEY);
-
-// ==========================================
-// 🗝️ VARIABLES GLOBALES
-// ==========================================
-let activeSubTab = 'hidden'; // 'hidden', 'todo', 'done'
+let activeSubTab = 'hidden';
 let selectedCategories = [];
 let categoryMatchMode = 'any';
-let cardsStateMap = {}; // État des cartes en temps réel
+let cardsStateMap = {};
 let tempCompletedCardId = null; 
 let loadedPhotoBase64 = null; 
 let motsDoux = [];
@@ -30,36 +50,44 @@ let bonsData = [];
 let activeCardId = null;
 let selectedRating = 0;
 let pendingGridRefresh = false;
+let allCategoriesList = [];
+let scratchPercentageChecked = false;
+let selectedBon = null;
+let platsRoulette = platsDeBase.map(plat => ({ name: plat, isBase: true, active: true }));
+let currentRotation = 0;
+
+if (SUPABASE_URL !== "https://TON_PROJET.supabase.co") {
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+emailjs.init(EMAILJS_PUBLIC_KEY);
 
 // ==========================================
 // 🚀 INITIALISATION DE L'APPLICATION
 // ==========================================
-window.onload = async () => {
-  setupRoulette();
+document.addEventListener('DOMContentLoaded', async () => {
+  updateRouletteSystem();
   
-  // Chargement des données locales
-  await chargerPhrases();
-  await chargerDates();
-  await chargerBons();
+  await Promise.all([
+    chargerPhrases(),
+    chargerDates(),
+    chargerBons()
+  ]);
 
   initAppEvents();
   initStarRatingWidget();
   initNightMode();
 
-  // Connexion BDD
   if (supabaseClient) {
     await checkStreak();
   } else {
     console.warn("Supabase n'est pas configuré. Mode démo actif.");
     loadDemoData();
   }
-};
+});
 
-// --- Système de Navigation des Onglets Principaux ---
+// --- Navigation ---
 function switchTab(viewId, element) {
-  document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  
+  document.querySelectorAll('.app-view, .nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById(viewId).classList.add('active');
   element.classList.add('active');
 
@@ -68,7 +96,14 @@ function switchTab(viewId, element) {
   }
 }
 
-// --- Interactions de focus des cartes (Gestion dynamique) ---
+function switchSubTab(subTab, element) {
+  document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+  element.classList.add('active');
+  activeSubTab = subTab;
+  genererCartesDates();
+}
+
+// --- Focus & Placeholders ---
 function createCardPlaceholder(cardWrapper) {
   if (!cardWrapper || cardWrapper.dataset.hasPlaceholder === 'true') return;
   const placeholder = document.createElement('div');
@@ -81,15 +116,12 @@ function createCardPlaceholder(cardWrapper) {
 function removeCardPlaceholder(cardWrapper) {
   if (!cardWrapper || cardWrapper.dataset.hasPlaceholder !== 'true') return;
   const placeholder = document.querySelector(`.card-placeholder[data-placeholder-for="${cardWrapper.id}"]`);
-  // On remet la carte à sa place d'origine dans la grille (elle avait été
-  // déplacée dans <body> pour échapper au conteneur scrollable sur mobile)
   if (placeholder) placeholder.replaceWith(cardWrapper);
   delete cardWrapper.dataset.hasPlaceholder;
 }
 
 function closeActiveCard({ refreshGrid = false } = {}) {
   const card = activeCardId ? document.getElementById(activeCardId) : null;
-  
   if (card) {
     card.classList.remove('focused'); 
     removeCardPlaceholder(card);
@@ -97,9 +129,7 @@ function closeActiveCard({ refreshGrid = false } = {}) {
   activeCardId = null;
 
   const overlay = document.getElementById('overlay');
-  if (overlay) {
-    overlay.classList.remove('active');
-  }
+  if (overlay) overlay.classList.remove('active');
 
   if (refreshGrid && pendingGridRefresh) {
     pendingGridRefresh = false;
@@ -108,52 +138,37 @@ function closeActiveCard({ refreshGrid = false } = {}) {
 }
 
 function initAppEvents() {
-  const grid = document.getElementById('dates-grid');
   const overlay = document.getElementById('overlay');
-  if (!grid) return;
 
   document.addEventListener('click', function(e) {
     const cardWrapper = e.target.closest('.card-wrapper');
-    if (!cardWrapper) return;
-
-    e.stopPropagation();
-
-    // Si la carte est déjà grande (focused), un clic dessus la retourne !
-    if (activeCardId === cardWrapper.id) {
-      if (!cardWrapper.classList.contains('flipped')) {
-        flipCard(e, cardWrapper.id);
+    
+    if (cardWrapper) {
+      e.stopPropagation();
+      if (activeCardId === cardWrapper.id) {
+        if (!cardWrapper.classList.contains('flipped')) {
+          flipCard(e, cardWrapper.id);
+        }
+        return;
       }
+      if (activeCardId) return;
+
+      createCardPlaceholder(cardWrapper);
+      document.body.appendChild(cardWrapper);
+      activeCardId = cardWrapper.id;
+      cardWrapper.classList.add('focused');
+      if (overlay) overlay.classList.add('active');
       return;
     }
 
-    if (activeCardId) return;
-
-    // Zoom et mise au centre de la carte
-    createCardPlaceholder(cardWrapper);
-    document.body.appendChild(cardWrapper);
-    activeCardId = cardWrapper.id;
-    cardWrapper.classList.add('focused');
-    
-    if (overlay) overlay.classList.add('active');
-  });
-
-  // Clic sur l'overlay d'arrière-plan ferme la carte
-  if (overlay) {
-    overlay.addEventListener('click', function() {
-      if (activeCardId) closeActiveCard({ refreshGrid: true });
-    });
-  }
-
-  // Sécurité supplémentaire si clic à côté de la grille
-  document.addEventListener('click', function(e) {
-    if (!activeCardId) return;
-    if (e.target.closest('.card-wrapper')) return;
-    closeActiveCard({ refreshGrid: true });
+    if (activeCardId) {
+      closeActiveCard({ refreshGrid: true });
+    }
   });
 }
 
 // ==========================================
-// 📖 CHARGEMENT DES DONNÉES JSON
+// 📖 CHARGEMENT & SYNCHRONISATION
 // ==========================================
 async function chargerPhrases() {
   try {
@@ -172,14 +187,10 @@ async function chargerDates() {
     
     datesData = melangerTableau(donneesBrutes);
     
-    // Récupération des catégories uniques
     const cats = new Set();
     datesData.forEach(d => {
-      if (Array.isArray(d.category)) {
-        d.category.forEach(c => cats.add(c));
-      } else if (d.category) {
-        cats.add(d.category);
-      }
+      if (Array.isArray(d.category)) d.category.forEach(c => cats.add(c));
+      else if (d.category) cats.add(d.category);
     });
     
     genererCategoriesFiltres(Array.from(cats));
@@ -199,9 +210,7 @@ async function syncCardsState() {
   }
   cardsStateMap = {};
   if (data) {
-    data.forEach(state => {
-      cardsStateMap[state.card_id] = state;
-    });
+    data.forEach(state => { cardsStateMap[state.card_id] = state; });
   }
 }
 
@@ -215,42 +224,70 @@ async function chargerBons() {
 }
 
 // ==========================================
-// 🎛️ SOU-ONGLETS & FILTRES DE CATÉGORIES
+// 🎛️ FILTRES DE CATÉGORIES
 // ==========================================
-function switchSubTab(subTab, element) {
-  document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
-  element.classList.add('active');
-  activeSubTab = subTab;
-  genererCartesDates();
+function parseCategory(categoryString) {
+  const chars = Array.from(categoryString.trim());
+  if (chars.length === 0) return { text: "", emoji: "" };
+
+  const emoji = chars.pop(); // Récupère le dernier caractère (l'émoji)
+  const text = chars.join('').trim(); // Récupère le reste du texte
+
+  return { text, emoji };
 }
 
 function genererCategoriesFiltres(categories) {
+  allCategoriesList = categories;
   const container = document.getElementById('categories-checkboxes');
   if (!container) return;
   container.innerHTML = '';
 
   categories.forEach(cat => {
     const isChecked = selectedCategories.includes(cat);
-    const html = `
-      <label class="category-pill ${isChecked ? 'active' : ''}" id="pill-${cat}">
-        <input type="checkbox" value="${cat}" onchange="toggleCategoryFilter(this, '${cat}')" ${isChecked ? 'checked' : ''}>
-        ${cat}
-      </label>
-    `;
-    container.insertAdjacentHTML('beforeend', html);
+    const { text, emoji } = parseCategory(cat);
+
+    // Recherche dans le dictionnaire (sur le texte nettoyé ou la clé brute), sinon dégradé bleu par défaut
+    const gradient = CATEGORY_GRADIENTS[text] || CATEGORY_GRADIENTS[cat] || DEFAULT_GRADIENT;
+
+    const label = document.createElement('label');
+    label.className = `category-pill ${isChecked ? 'active' : ''}`;
+    label.style.setProperty('--btn-gradient', gradient);
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = cat;
+    checkbox.checked = isChecked;
+    checkbox.addEventListener('change', (e) => toggleCategoryFilter(e.target, cat));
+
+    // Texte aligné à gauche (au-dessus du dégradé)
+    const textSpan = document.createElement('span');
+    textSpan.className = 'category-text';
+    textSpan.textContent = text;
+
+    // Émoji géant à droite (sous le dégradé)
+    const emojiSpan = document.createElement('span');
+    emojiSpan.className = 'category-emoji';
+    emojiSpan.textContent = emoji;
+
+    // Construction du bouton
+    label.appendChild(checkbox);
+    label.appendChild(textSpan);
+    label.appendChild(emojiSpan);
+
+    container.appendChild(label);
   });
 
   updateSelectedCategoriesCount();
 }
 
 function toggleCategoryFilter(checkbox, category) {
-  const pill = document.getElementById(`pill-${category}`);
+  const pill = checkbox.closest('.category-pill');
   if (checkbox.checked) {
     if (!selectedCategories.includes(category)) selectedCategories.push(category);
-    pill.classList.add('active');
+    if (pill) pill.classList.add('active');
   } else {
     selectedCategories = selectedCategories.filter(c => c !== category);
-    pill.classList.remove('active');
+    if (pill) pill.classList.remove('active');
   }
   updateSelectedCategoriesCount();
   genererCartesDates();
@@ -258,27 +295,28 @@ function toggleCategoryFilter(checkbox, category) {
 
 function updateSelectedCategoriesCount() {
   const badge = document.getElementById('selected-categories-count');
-  if (!badge) return;
-  badge.textContent = selectedCategories.length;
+  if (badge) badge.textContent = selectedCategories.length;
 }
 
 function showCategoriesOverlay() {
   const overlay = document.getElementById('categories-overlay');
-  if (!overlay) return;
-  overlay.classList.add('active');
-  overlay.setAttribute('aria-hidden', 'false');
+  if (overlay) {
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+  }
 }
 
 function hideCategoriesOverlay() {
   const overlay = document.getElementById('categories-overlay');
-  if (!overlay) return;
-  overlay.classList.remove('active');
-  overlay.setAttribute('aria-hidden', 'true');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
 }
 
 function clearCategoryFilters() {
   selectedCategories = [];
-  genererCategoriesFiltres(Array.from(document.querySelectorAll('#categories-checkboxes input')).map(input => input.value));
+  genererCategoriesFiltres(allCategoriesList);
   genererCartesDates();
 }
 
@@ -292,18 +330,16 @@ function genererCartesDates() {
 
   const filteredDates = datesData.filter(date => {
     const state = cardsStateMap[date.id];
-    if (activeSubTab === 'hidden') { if (state && state.is_revealed) return false; }
-    else if (activeSubTab === 'todo') { if (!state || !state.is_revealed || state.is_completed) return false; }
-    else if (activeSubTab === 'done') { if (!state || !state.is_completed) return false; }
+    if (activeSubTab === 'hidden' && state?.is_revealed) return false;
+    if (activeSubTab === 'todo' && (!state?.is_revealed || state?.is_completed)) return false;
+    if (activeSubTab === 'done' && !state?.is_completed) return false;
 
-    if (!dateMatchesCategoryFilter(date)) return false;
-    return true;
+    return dateMatchesCategoryFilter(date);
   });
 
   filteredDates.forEach(date => {
     const state = cardsStateMap[date.id] || {};
-    
-    let buttonHtml = activeSubTab === 'todo' 
+    const buttonHtml = activeSubTab === 'todo' 
       ? `<button class="btn-validate" onclick="openCompleteModal(event, '${date.id}')">Marquer comme fait ! ✅</button>` 
       : `<button class="btn-validate" style="background:#5856d6;" onclick="openViewMemoryModal('${date.id}')">📸 Nos Souvenirs</button>`;
 
@@ -331,16 +367,15 @@ function setCategoryMatchMode(mode) {
 }
 
 function dateMatchesCategoryFilter(date) {
-  if (selectedCategories.length === 0) return true; // rien coché = tout passe
+  if (selectedCategories.length === 0) return true;
   const itemCategories = Array.isArray(date.category) ? date.category : [date.category];
-  if (categoryMatchMode === 'all') {
-    return selectedCategories.every(cat => itemCategories.includes(cat));
-  }
-  return itemCategories.some(cat => selectedCategories.includes(cat));
+  return categoryMatchMode === 'all'
+    ? selectedCategories.every(cat => itemCategories.includes(cat))
+    : itemCategories.some(cat => selectedCategories.includes(cat));
 }
 
 // ==========================================
-// 🔒 GESTION DU RETOURNEMENT UNIQUE PAR JOUR
+// 🔒 RETOURNEMENT DE CARTE
 // ==========================================
 async function canRevealDate() {
   if (!supabaseClient) return true;
@@ -348,8 +383,7 @@ async function canRevealDate() {
   if (error || !data) return true;
   
   const todayStr = new Date().toDateString();
-  const hasRevealedToday = data.some(row => new Date(row.revealed_at).toDateString() === todayStr);
-  return !hasRevealedToday;
+  return !data.some(row => new Date(row.revealed_at).toDateString() === todayStr);
 }
 
 async function flipCard(event, cardId) {
@@ -359,8 +393,8 @@ async function flipCard(event, cardId) {
   }
 
   const cardElement = document.getElementById(cardId);
-
   const allowed = await canRevealDate();
+
   if (!allowed) {
     if (cardElement) cardElement.classList.add('shake-locked');
     setTimeout(() => {
@@ -381,8 +415,8 @@ async function flipCard(event, cardId) {
     }, { onConflict: 'card_id' });
 
     if (upsertError) {
-      console.error("Erreur d'enregistrement de la carte :", upsertError);
-      showToast("⚠️ La carte n'a pas pu être enregistrée (" + upsertError.message + "). Elle réapparaîtra au prochain chargement.");
+      console.error("Erreur d'enregistrement :", upsertError);
+      showToast(`⚠️ La carte n'a pas pu être enregistrée (${upsertError.message}).`);
       if (cardElement) cardElement.classList.remove('flipped');
       return;
     }
@@ -403,16 +437,16 @@ function sendLoveEmail(dateName) {
 }
 
 // ==========================================
-// 🎲 BOUTON RANDOM MAGIQUE (CŒUR + ?)
+// 🎲 RANDOM DATE
 // ==========================================
-async function triggerRandomDate() {
+function triggerRandomDate() {
   if (activeCardId) closeActiveCard();
   const pool = datesData.filter(dateMatchesCategoryFilter);
   if (pool.length === 0) return;
 
   const randomDate = pool[Math.floor(Math.random() * pool.length)];
-  
   const state = cardsStateMap[randomDate.id] || {};
+
   if (!state.is_revealed) switchSubTab('hidden', document.querySelector('.segment-btn:nth-child(1)'));
   else if (state.is_completed) switchSubTab('done', document.querySelector('.segment-btn:nth-child(3)'));
   else switchSubTab('todo', document.querySelector('.segment-btn:nth-child(2)'));
@@ -421,7 +455,7 @@ async function triggerRandomDate() {
     const element = document.getElementById(randomDate.id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      createCardPlaceholder(element);        // ← ajouté
+      createCardPlaceholder(element);
       document.body.appendChild(element);
       element.classList.add('focused');
       document.getElementById('overlay').classList.add('active');
@@ -433,7 +467,7 @@ async function triggerRandomDate() {
 }
 
 // ==========================================
-// 📸 GESTION PHOTO & COMPRESSION CANVAS
+// 📸 PHOTO COMPRESSION & SOUVENIRS
 // ==========================================
 function previewMemoryPhoto(event) {
   const file = event.target.files[0];
@@ -459,7 +493,6 @@ function previewMemoryPhoto(event) {
       ctx.drawImage(img, 0, 0, width, height);
       
       loadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.75);
-
       const preview = document.getElementById('memory-photo-preview');
       preview.src = loadedPhotoBase64;
       preview.style.display = 'block';
@@ -469,13 +502,9 @@ function previewMemoryPhoto(event) {
   reader.readAsDataURL(file);
 }
 
-// ==========================================
-// ⭐ WIDGET DE NOTE EN ÉTOILES
-// ==========================================
 function setStarRating(value) {
   selectedRating = value;
-  const stars = document.querySelectorAll('#memory-rating .star');
-  stars.forEach(star => {
+  document.querySelectorAll('#memory-rating .star').forEach(star => {
     const starValue = parseInt(star.dataset.value, 10);
     star.classList.toggle('filled', starValue <= value);
   });
@@ -485,21 +514,15 @@ function initStarRatingWidget() {
   const container = document.getElementById('memory-rating');
   if (!container) return;
   container.querySelectorAll('.star').forEach(star => {
-    star.addEventListener('click', () => {
-      setStarRating(parseInt(star.dataset.value, 10));
-    });
+    star.addEventListener('click', () => setStarRating(parseInt(star.dataset.value, 10)));
   });
 }
 
 function starsToText(rating) {
   const r = parseInt(rating, 10) || 0;
-  if (r <= 0) return "Pas encore notée.";
-  return "★".repeat(r) + "☆".repeat(5 - r);
+  return r <= 0 ? "Pas encore notée." : "★".repeat(r) + "☆".repeat(5 - r);
 }
 
-// ==========================================
-// 📝 SYSTÈME DE SOUVENIRS (JOURNAL DE BORD)
-// ==========================================
 function openCompleteModal(event, cardId) {
   if (event) event.stopPropagation();
   tempCompletedCardId = cardId;
@@ -541,10 +564,7 @@ async function saveDateMemory() {
 
   showToast("Souvenir sauvegardé avec succès dans votre album ! 📸💖");
   closeCompleteModal();
-  
-  if (activeCardId) {
-    closeActiveCard();
-  }
+  if (activeCardId) closeActiveCard();
 
   await syncCardsState();
   pendingGridRefresh = false;
@@ -557,16 +577,13 @@ function openViewMemoryModal(cardId) {
   if (!state || !dateObj) return;
 
   document.getElementById('view-mem-title').textContent = dateObj.title;
-  
-  if (state.completed_at) {
-    const d = new Date(state.completed_at);
-    document.getElementById('view-mem-date').textContent = `Réalisé le ${d.toLocaleDateString('fr-FR')}`;
-  } else {
-    document.getElementById('view-mem-date').textContent = '';
-  }
+  document.getElementById('view-mem-date').textContent = state.completed_at
+    ? `Réalisé le ${new Date(state.completed_at).toLocaleDateString('fr-FR')}`
+    : '';
 
   const photoWrapper = document.getElementById('view-mem-photo-wrapper');
   const imgElement = document.getElementById('view-mem-photo');
+
   if (state.photo_base64) {
     imgElement.src = state.photo_base64;
     photoWrapper.style.display = 'block';
@@ -585,11 +602,8 @@ function closeViewMemoryModal() {
 }
 
 // ==========================================
-// 🎟️ MOTEUR DE GRATTAGE DE BONS SURPRISE
+// 🎟️ BONS SURPRISE & SCRATCH
 // ==========================================
-let scratchPercentageChecked = false;
-let selectedBon = null;
-
 async function hasScratchedToday() {
   if (!supabaseClient) return false;
   const { data, error } = await supabaseClient.from('user_vouchers').select('scratched_at');
@@ -645,19 +659,15 @@ async function openScratchModal() {
   document.getElementById('scratch-prize-title').textContent = selectedBon.title;
   document.getElementById('btn-close-scratch').style.display = 'none';
 
-  const modal = document.getElementById('scratch-modal');
-  modal.classList.add('active');
-
+  document.getElementById('scratch-modal').classList.add('active');
   scratchPercentageChecked = false;
-  setTimeout(() => {
-    initScratchCanvas();
-  }, 150);
+  setTimeout(initScratchCanvas, 150);
 }
 
 function initScratchCanvas() {
   const canvas = document.getElementById('scratch-canvas');
-  const wrapper = canvas.parentElement;
   if (!canvas) return;
+  const wrapper = canvas.parentElement;
 
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   canvas.style.display = 'block';
@@ -702,9 +712,7 @@ function initScratchCanvas() {
     checkScratchedPercentage();
   }
 
-  function stopDrawing() { 
-    isDrawing = false; 
-  }
+  function stopDrawing() { isDrawing = false; }
 
   let checkTimeout;
   function checkScratchedPercentage() {
@@ -713,15 +721,11 @@ function initScratchCanvas() {
     checkTimeout = setTimeout(async () => {
       const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
       let transparentPixels = 0;
-      const totalPixels = pixels.length / 4;
-
       for (let i = 3; i < pixels.length; i += 4) {
         if (pixels[i] === 0) transparentPixels++;
       }
 
-      const percent = (transparentPixels / totalPixels) * 100;
-
-      if (percent > 55) {
+      if ((transparentPixels / (pixels.length / 4)) * 100 > 55) {
         scratchPercentageChecked = true;
         canvas.style.transition = 'opacity 0.5s ease';
         canvas.style.opacity = 0;
@@ -744,7 +748,6 @@ function initScratchCanvas() {
   canvas.addEventListener('touchstart', startDrawing, { passive: false });
   canvas.addEventListener('touchmove', draw, { passive: false });
   canvas.addEventListener('touchend', stopDrawing);
-
   canvas.addEventListener('mousedown', startDrawing);
   canvas.addEventListener('mousemove', draw);
   canvas.addEventListener('mouseup', stopDrawing);
@@ -766,7 +769,6 @@ async function renderInventory() {
   }
 
   const { data, error } = await supabaseClient.from('user_vouchers').select('*').eq('status', 'owned');
-
   if (error) {
     console.error(error);
     return;
@@ -781,12 +783,10 @@ async function renderInventory() {
   data.forEach(row => { counts[row.bon_id] = (counts[row.bon_id] || 0) + 1; });
 
   inventoryDiv.innerHTML = '';
-
   Object.keys(counts).forEach(bonId => {
     const bon = bonsData.find(b => b.id === bonId);
     if (!bon) return;
 
-    const qty = counts[bonId];
     const html = `
       <div class="card token-card" id="owned-${bon.id}" style="border-radius: 18px; margin-bottom: 12px; padding: 15px;">
         <div class="token-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
@@ -794,7 +794,7 @@ async function renderInventory() {
             <span class="token-icon" style="font-size: 30px;">${bon.icon}</span>
             <div style="text-align: left;">
               <h3 style="font-size: 15px; font-weight: bold; margin: 0;">${bon.title}</h3>
-              <p style="font-size: 12px; color: var(--text-secondary); margin: 2px 0 0 0;">Quantité : <strong>x${qty}</strong></p>
+              <p style="font-size: 12px; color: var(--text-secondary); margin: 2px 0 0 0;">Quantité : <strong>x${counts[bonId]}</strong></p>
             </div>
           </div>
           <button class="btn-primary" onclick="useInventoryToken('${bon.id}')" style="padding: 8px 16px; font-size: 13px; border-radius: 10px; width: 8em;">Utiliser ✨</button>
@@ -821,12 +821,10 @@ async function useInventoryToken(bonId) {
     return;
   }
 
-  const recordId = data[0].id;
-
   const { error: updateError } = await supabaseClient
     .from('user_vouchers')
     .update({ status: 'used', used_at: new Date().toISOString() })
-    .eq('id', recordId);
+    .eq('id', data[0].id);
 
   if (updateError) {
     showToast("Impossible d'utiliser ce bon actuellement.");
@@ -846,7 +844,7 @@ async function useInventoryToken(bonId) {
 }
 
 // ==========================================
-// 🔥 GESTION DES FLAMMES (STREAK)
+// 🔥 STREAK & DAILY BOX
 // ==========================================
 async function checkStreak() {
   const { data, error } = await supabaseClient.from('progress_tracker').select('*').single();
@@ -861,9 +859,7 @@ async function checkStreak() {
 
   const lastConnection = new Date(data.last_connection);
   const lastConnectionMidnight = new Date(lastConnection.getFullYear(), lastConnection.getMonth(), lastConnection.getDate());
-
-  const diffTime = todayMidnight - lastConnectionMidnight;
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.round((todayMidnight - lastConnectionMidnight) / (1000 * 60 * 60 * 24));
 
   let streak = data.current_streak;
 
@@ -888,19 +884,12 @@ async function checkStreak() {
 function openDailyBox() {
   if (motsDoux.length === 0) return;
 
-  const modal = document.getElementById('daily-modal');
-  const messageText = document.getElementById('daily-message-text');
-  
   const now = new Date();
   const start = new Date(now.getFullYear(), 0, 0);
-  const diff = now - start;
-  const oneDay = 1000 * 60 * 60 * 24;
-  const dayOfYear = Math.floor(diff / oneDay);
+  const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24));
 
-  const phraseDuJour = motsDoux[dayOfYear % motsDoux.length];
-  messageText.textContent = phraseDuJour;
-
-  modal.classList.add('active');
+  document.getElementById('daily-message-text').textContent = motsDoux[dayOfYear % motsDoux.length];
+  document.getElementById('daily-modal').classList.add('active');
 }
 
 function closeDailyModal() {
@@ -909,17 +898,8 @@ function closeDailyModal() {
 }
 
 // ==========================================
-// 🍕 LOGIQUE ROULETTE REPAS ÉVOLUTIVE
+// 🍕 ROULETTE REPAS
 // ==========================================
-const platsDeBase = ["Pizza 🍕", "Burger 🍔", "Sushis 🍣", "Pâtes 🍝", "Salade 🥗", "Tacos 🌮"];
-let platsRoulette = platsDeBase.map(plat => ({ name: plat, isBase: true, active: true }));
-let currentRotation = 0;
-const paletteCouleurs = ['#ffb7b2', '#ffdac1', '#e2f0cb', '#b5ead7', '#c7ceea', '#ffc6ff'];
-
-document.addEventListener("DOMContentLoaded", () => {
-  updateRouletteSystem();
-});
-
 function updateRouletteSystem() {
   renderConfigList();
   setupRoulette();
@@ -939,21 +919,17 @@ function setupRoulette() {
   }
   
   const angleStep = 360 / activePlats.length;
-  let gradientParts = [];
+  const gradientParts = [];
   
   activePlats.forEach((platObj, index) => {
     const startAngle = angleStep * index;
     const endAngle = angleStep * (index + 1);
-    const couleur = paletteCouleurs[index % paletteCouleurs.length];
-    
-    gradientParts.push(`${couleur} ${startAngle}deg ${endAngle}deg`);
+    gradientParts.push(`${paletteCouleurs[index % paletteCouleurs.length]} ${startAngle}deg ${endAngle}deg`);
     
     const label = document.createElement('div');
     label.className = 'segment-label';
     label.textContent = platObj.name;
-    
-    const middleAngle = startAngle + (angleStep / 2);
-    label.style.transform = `translate(-50%, -50%) rotate(${middleAngle}deg) translateY(-85px) rotate(90deg)`;
+    label.style.transform = `translate(-50%, -50%) rotate(${startAngle + (angleStep / 2)}deg) translateY(-85px) rotate(90deg)`;
     
     wheel.appendChild(label);
   });
@@ -999,11 +975,10 @@ function addCustomPlat() {
   if (!input) return;
   
   const text = input.value.trim();
-  if (text === '') return;
+  if (!text) return;
   
   platsRoulette.push({ name: text, isBase: false, active: true });
   input.value = ''; 
-  
   updateRouletteSystem();
 }
 
@@ -1017,37 +992,26 @@ function spinWheel() {
   const wheel = document.getElementById('wheel');
   const btnSpin = document.getElementById('btn-spin');
   const resultElement = document.getElementById('roulette-result');
-  
   const activePlats = platsRoulette.filter(p => p.active);
   
   if (activePlats.length === 0) {
     if (resultElement) resultElement.textContent = "Activez au moins un plat ! 🧐";
     return;
   }
-  
   if (!wheel || !btnSpin) return;
   
   btnSpin.disabled = true;
   btnSpin.style.opacity = "0.6";
   if (resultElement) resultElement.textContent = "Choix en cours... 🍽️";
   
-  const angleAleatoire = Math.floor(Math.random() * 360);
-  currentRotation += 1800 + angleAleatoire; 
-  
+  currentRotation += 1800 + Math.floor(Math.random() * 360);
   wheel.style.transform = `rotate(${currentRotation}deg)`;
   
   setTimeout(() => {
-    const angleFinalSur360 = currentRotation % 360;
-    const angleSousPointeur = (360 - angleFinalSur360) % 360;
-    const tailleSegment = 360 / activePlats.length;
-    
-    const winningIndex = Math.floor(angleSousPointeur / tailleSegment);
-    const platGagnant = activePlats[winningIndex].name;
-    
+    const winningIndex = Math.floor(((360 - (currentRotation % 360)) % 360) / (360 / activePlats.length));
     if (resultElement) {
-      resultElement.textContent = `Ce soir on mange : ${platGagnant} !`;
+      resultElement.textContent = `Ce soir on mange : ${activePlats[winningIndex].name} !`;
     }
-    
     btnSpin.disabled = false;
     btnSpin.style.opacity = "1";
     btnSpin.innerHTML = "Relancer la roue !";
@@ -1060,28 +1024,18 @@ function toggleConfigPanel() {
   if (!configPanel || !btnToggle) return;
   
   const isOpen = configPanel.classList.toggle('open');
-  
-  if (isOpen) {
-    btnToggle.innerHTML = "❌";
-    btnToggle.style.background = "#ff4a5a";
-    btnToggle.style.color = "#ffffff";
-    btnToggle.style.borderColor = "#ff4a5a";
-    btnToggle.style.transform = "rotate(90deg)";
-  } else {
-    btnToggle.innerHTML = "🖌️";
-    btnToggle.style.background = "";
-    btnToggle.style.color = "";
-    btnToggle.style.borderColor = "";
-    btnToggle.style.transform = "";
-  }
+  btnToggle.innerHTML = isOpen ? "❌" : "🖌️";
+  btnToggle.style.background = isOpen ? "#ff4a5a" : "";
+  btnToggle.style.color = isOpen ? "#ffffff" : "";
+  btnToggle.style.borderColor = isOpen ? "#ff4a5a" : "";
+  btnToggle.style.transform = isOpen ? "rotate(90deg)" : "";
 }
 
 // ==========================================
-// ⚙️ OUTILS ET UTILITAIRES GLOBES
+// ⚙️ UTILITAIRES GLOBAUX
 // ==========================================
 function initNightMode() {
-  const storedTheme = localStorage.getItem('bibapp-night-mode');
-  if (storedTheme === 'on') {
+  if (localStorage.getItem('bibapp-night-mode') === 'on') {
     document.documentElement.classList.add('dark-mode');
   }
   updateNightModeIcon();
@@ -1094,47 +1048,38 @@ function toggleNightMode() {
 }
 
 function updateNightModeIcon() {
-  const button = document.getElementById('night-mode-button');
-  if (!button) return;
-  const dot = button.querySelector('.theme-dot');
-  if (!dot) return;
-  dot.innerHTML = document.documentElement.classList.contains('dark-mode') ? '<i class="ph-fill ph-sun icon-emoji"></i>' : '<i class="ph-fill ph-moon icon-emoji"></i>';
+  const dot = document.querySelector('#night-mode-button .theme-dot');
+  if (dot) {
+    dot.innerHTML = document.documentElement.classList.contains('dark-mode')
+      ? '<i class="ph-fill ph-sun icon-emoji"></i>'
+      : '<i class="ph-fill ph-moon icon-emoji"></i>';
+  }
 }
 
 function loadDemoData() {
   document.getElementById('streak-count').textContent = "5";
 }
 
-
 function showToast(message) {
   const container = document.getElementById('toast-container');
+  if (!container) return;
   
-  // 1. On vide le conteneur pour supprimer tout message précédent
   container.innerHTML = '';
-  
-  // 2. Création du nouveau toast
   const toast = document.createElement('div');
   toast.className = 'toast active';
   toast.textContent = message;
   container.appendChild(toast);
   
-  // 3. Suppression automatique après 3 secondes (ton code original)
   setTimeout(() => {
-    // Vérification de sécurité : le toast existe-t-il encore ?
-    // (au cas où il aurait été supprimé par une action utilisateur rapide)
     if (toast.parentNode) {
-        toast.style.opacity = '0';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.remove();
-            }
-        }, 300);
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
     }
   }, 3000);
 }
 
 function melangerTableau(tableau) {
-  let copie = [...tableau]; 
+  const copie = [...tableau]; 
   for (let i = copie.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [copie[i], copie[j]] = [copie[j], copie[i]];

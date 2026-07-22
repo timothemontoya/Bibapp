@@ -5,29 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Bibapp</title>
   
-  <!-- Configuration PWA pour iPhone -->
+  <!-- Configuration PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Bibapp">
-  <link rel="apple-touch-icon" href="assets/icon.png"> <!-- METTRE TON ICÔNE D'APPLICATION ICI -->
+  <link rel="apple-touch-icon" href="assets/icon.png">
+  
+  <!-- Feuilles de style & Icônes -->
   <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/bold.css"/>
   <link rel="stylesheet" href="style.css">
 
-  <!-- SDK Supabase & EmailJS -->
+  <!-- SDK Supabase, EmailJS & Phosphor Icons -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 
-  
-
-  <!-- Conteneur principal (Taille iPhone) -->
   <div class="app-container">
-    
-    <!-- ========================================== -->
-    <!-- ÉCRAN 1 : ACCUEIL                          -->
-    <!-- ========================================== -->
+    <!-- ACCUEIL -->
     <section id="view-accueil" class="app-view active">
       <header class="view-header">
         <div class="theme-toggle" onclick="toggleNightMode()" id="night-mode-button" aria-label="Mode nuit">
@@ -40,20 +36,20 @@
       </header>
 
       <div class="scroll-content">
-        <!-- Widget Boîte à Douceurs -->
         <div class="card widget-box" onclick="openDailyBox()">
           <div class="blender-placeholder">
             <span class="fallback-icon">💌</span>
           </div>
           <div class="widget-info">
             <h3>Boîte à douceurs</h3>
-            <p id="box-status-text">Chaque jour, une raison de t'aimmer</p>
+            <p id="box-status-text">Chaque jour, une raison de t'aimer</p>
           </div>
         </div>
 
-        <!-- Widget Roulette Repas -->
         <div class="card roulette-widget">
-          <button id="btn-toggle-config" class="btn-toggle-config" onclick="toggleConfigPanel()"><i class="ph ph-note-pencil icon-emoji"></i></button>
+          <button id="btn-toggle-config" class="btn-toggle-config" onclick="toggleConfigPanel()">
+            <i class="ph ph-note-pencil icon-emoji"></i>
+          </button>
 
           <h3>La Roulette Repas <i data-lucide="pizza" class="icon-emoji"></i></h3>
           
@@ -67,7 +63,6 @@
           </div>
           <p id="roulette-result" class="roulette-result"></p>
 
-          <!-- Panneau de configuration (Overlay) -->
           <div id="roulette-config" class="roulette-config">
             <h4>Ajouter ou désactiver des idées :</h4>
             <ul id="roulette-list" class="roulette-list"></ul>
@@ -81,9 +76,7 @@
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- ÉCRAN 2 : DATES SECRETS                    -->
-    <!-- ========================================== -->
+    <!-- DATES SECRETS -->
     <section id="view-dates" class="app-view">
       <div class="dates-header-sticky">
         <div class="dates-top">
@@ -91,14 +84,12 @@
             <h1>DATES SECRETS</h1>
           </div>
 
-          <!-- Onglets de navigation (Segmented Control) -->
           <div class="segmented-control">
             <button class="segment-btn active" onclick="switchSubTab('hidden', this)">Cachés 🫣</button>
             <button class="segment-btn" onclick="switchSubTab('todo', this)">À Faire 🗓️</button>
             <button class="segment-btn" onclick="switchSubTab('done', this)">Faits 🥰</button>
           </div>
 
-          <!-- Filtres de catégories -->
           <div class="categories-filter-container">
             <button class="btn-secondary btn-categories-toggle" onclick="showCategoriesOverlay()">
               Catégories
@@ -134,38 +125,28 @@
             </div>
           </div>
         </div>
-
-        
       </div>
-      <!-- Grille des cartes -->
-        <div id="dates-grid" class="dates-grid">
-          <!-- Généré dynamiquement en JS -->
-        </div>
-      <!-- Bouton Random -->
+
+      <div id="dates-grid" class="dates-grid"></div>
+
       <button class="btn-random-heart" onclick="triggerRandomDate()" title="Tirer une activité au sort !">
         <span class="heart-icon">❤️</span>
         <span class="question-mark-overlay">?</span>
       </button>
     </section>
 
-    <!-- ========================================== -->
-    <!-- ÉCRAN 3 : MES BONS                         -->
-    <!-- ========================================== -->
+    <!-- MES BONS -->
     <section id="view-bons" class="app-view">
       <header class="view-header">
         <h1>Mes Super Pouvoirs ⚡</h1>
       </header>
       
       <div class="scroll-content">
-        <div class="tokens-list" id="tokens-list">
-          <!-- Généré dynamiquement en JS -->
-        </div>
+        <div class="tokens-list" id="tokens-list"></div>
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- BARRE DE NAVIGATION (BOTTOM BAR)           -->
-    <!-- ========================================== -->
+    <!-- BARRE DE NAVIGATION -->
     <nav class="nav-bar">
       <button class="nav-item active" onclick="switchTab('view-accueil', this)">
         <span class="nav-icon"><i class="ph-duotone ph-house-line icon-emoji"></i></span>
@@ -182,11 +163,7 @@
     </nav>
   </div>
 
-  <!-- ========================================== -->
-  <!-- MODALES GLOBALES                           -->
-  <!-- ========================================== -->
-
-  <!-- Pop-up du Message Quotidien (Boîte à douceurs) -->
+  <!-- MODALES GLOBALES -->
   <div id="daily-modal" class="modal">
     <div class="modal-content">
       <div class="blender-placeholder-mini">
@@ -199,7 +176,6 @@
     </div>
   </div>
 
-  <!-- Modal Grattage Ticket -->
   <div id="scratch-modal" class="custom-modal-overlay">
     <div class="scratch-card-box">
       <div class="scratch-card-header">
@@ -219,7 +195,6 @@
     </div>
   </div>
 
-  <!-- Modal Marquer Date Comme Fait -->
   <div id="complete-date-modal" class="custom-modal-overlay">
     <div class="memory-form-box">
       <h2>🎉 Date Réalisé !</h2>
@@ -256,7 +231,6 @@
     </div>
   </div>
 
-  <!-- Modal Voir un Souvenir -->
   <div id="view-memory-modal" class="custom-modal-overlay">
     <div class="memory-display-box">
       <span class="close-memory-btn" onclick="closeViewMemoryModal()">❌</span>
@@ -279,9 +253,9 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
   <div id="toast-container" class="toast-container"></div>
-  <!-- Overlay d'arrière-plan flouté pour le focus des cartes -->
   <div id="overlay" class="overlay"></div>
+  
+  <script src="app.js"></script>
 </body>
 </html>

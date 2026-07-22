@@ -356,7 +356,7 @@ body {
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.65); /* Assombrit le fond */
   backdrop-filter: blur(3px); /* Optionnel : petit effet de flou très moderne */
-  z-index: 15; /* Super important : Doit être entre 10 et 100 ! */
+  z-index: 95; /* Super important : Doit être entre 10 et 100 ! */
   
   /* Caché par défaut */
   opacity: 0;

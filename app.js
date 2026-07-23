@@ -3,9 +3,9 @@
 // ==========================================
 const SUPABASE_URL = "https://oooveysvgzeumrzbjlyd.supabase.co"; 
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vb3ZleXN2Z3pldW1yemJqbHlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMDc4MjQsImV4cCI6MjA5OTY4MzgyNH0.VLQli39DvPiw3CxeDHirRQ6dC7rHRRq15A-IdhkCRe8";
-const EMAILJS_PUBLIC_KEY = "TA_CLE_PUBLIQUE_EMAILJS";
-const EMAILJS_SERVICE_ID = "TON_SERVICE_ID_EMAILJS";
-const EMAILJS_TEMPLATE_ID = "TON_TEMPLATE_ID_EMAILJS";
+const EMAILJS_PUBLIC_KEY = "ZM5p_wLlen1NYYEF-";
+const EMAILJS_SERVICE_ID = "service_ms09a0l";
+const EMAILJS_TEMPLATE_ID = "template_rla96gu";
 
 
 const CATEGORY_GRADIENTS = {

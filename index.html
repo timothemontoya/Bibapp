@@ -130,7 +130,7 @@
       <div id="dates-grid" class="dates-grid"></div>
 
       <button class="btn-random-heart" onclick="triggerRandomDate()" title="Tirer une activité au sort !">
-        <span class="heart-icon">❤️</span>
+        <span class="heart-icon"></span>
         <span class="question-mark-overlay">?</span>
       </button>
     </section>
@@ -198,10 +198,10 @@
   <div id="complete-date-modal" class="custom-modal-overlay">
     <div class="memory-form-box">
       <h2>🎉 Date Réalisé !</h2>
-      <p>Créez votre souvenir pour graver ce moment dans votre journal :</p>
+      <p>Il faut marquer le coup dans le journal !</p>
       
       <div class="form-group">
-        <label>📸 Ajouter une Photo (souvenir) :</label>
+        <label>📸 Photo souvenir :</label>
         <input type="file" id="memory-photo-input" accept="image/*" onchange="previewMemoryPhoto(event)">
         <div class="photo-preview-container">
           <img id="memory-photo-preview" src="" style="display: none; width: 100%; border-radius: 12px; margin-top: 10px;">
@@ -209,7 +209,7 @@
       </div>
 
       <div class="form-group">
-        <label>⭐ Ta Note :</label>
+        <label>⭐ Note :</label>
         <div class="star-rating" id="memory-rating">
           <span class="star" data-value="1">★</span>
           <span class="star" data-value="2">★</span>
@@ -220,8 +220,8 @@
       </div>
 
       <div class="form-group">
-        <label>💬 Son Commentaire / Ressenti :</label>
-        <input type="text" id="memory-comment" placeholder="Ex: Une de mes meilleures soirées !">
+        <label>💬 Un petit mot :</label>
+        <input type="text" id="memory-comment" placeholder="Ex: Le caca etait délicieux 😋">
       </div>
 
       <div class="modal-actions">

@@ -167,6 +167,7 @@ body {
 .theme-dot { font-size: 18px; }
 
 .btn-primary, .btn-secondary {
+  margin: 4px;
   border: none;
   border-radius: 16px;
   padding: 12px 20px;
@@ -548,7 +549,15 @@ body {
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .btn-random-heart:hover, .btn-random-heart:active { transform: scale(1.15) rotate(5deg); }
-.btn-random-heart .heart-icon { font-size: 32px; color: #ff2d55; }
+.btn-random-heart .heart-icon { 
+  color: #ff2d55;
+  width: 40px;                /* Ajuste la largeur souhaitée */
+  height: 40px;               /* Ajuste la hauteur souhaitée */
+  background-image: url('assets/heart.png'); /* Chemin vers ton image */
+  background-size: contain;   /* Redimensionne l'image sans la déformer */
+  background-repeat: no-repeat;
+  background-position: bottom;
+}
 .btn-random-heart .question-mark-overlay { position: absolute; font-size: 16px; font-weight: 900; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.4); top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
 /* ========================================== */

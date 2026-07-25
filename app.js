@@ -44,6 +44,7 @@ let pendingGridRefresh = false;
 let allCategoriesList = [];
 let scratchPercentageChecked = false;
 let selectedBon = null;
+let bonIdToUse = null;
 let platsRoulette = platsDeBase.map(plat => ({ name: plat, isBase: true, active: true }));
 let currentRotation = 0;
 
@@ -339,7 +340,7 @@ function genererCartesDates() {
     const state = cardsStateMap[date.id] || {};
     const buttonHtml = activeSubTab === 'todo' 
       ? `<button class="btn-validate" onclick="openCompleteModal(event, '${date.id}')">Marquer comme fait ! ✅</button>` 
-      : `<button class="btn-validate" style="background:#5856d6;" onclick="openViewMemoryModal('${date.id}')">📸 Nos Souvenirs</button>`;
+      : `<button class="btn-validate" style="background:#5856d6;" onclick="openViewMemoryModal(event, '${date.id}')">📸 Nos Souvenirs</button>`;
 
     const cardHtml = `
       <div class="card-wrapper ${state.is_revealed ? 'flipped' : ''}" id="${date.id}" data-id="${date.id}">
@@ -531,6 +532,8 @@ function openCompleteModal(event, cardId) {
   document.getElementById('memory-comment').value = '';
   setStarRating(0);
 
+  if (activeCardId) closeActiveCard();
+
   document.getElementById('complete-date-modal').classList.add('active');
 }
 
@@ -569,10 +572,14 @@ async function saveDateMemory() {
   genererCartesDates();
 }
 
-function openViewMemoryModal(cardId) {
+function openViewMemoryModal(event, cardId) {
+  if (event) event.stopPropagation();
+
   const state = cardsStateMap[cardId];
   const dateObj = datesData.find(d => d.id === cardId);
   if (!state || !dateObj) return;
+
+  if (activeCardId) closeActiveCard();
 
   document.getElementById('view-mem-title').textContent = dateObj.title;
   document.getElementById('view-mem-date').textContent = state.completed_at
@@ -723,7 +730,7 @@ function initScratchCanvas() {
         if (pixels[i] === 0) transparentPixels++;
       }
 
-      if ((transparentPixels / (pixels.length / 4)) * 100 > 55) {
+      if ((transparentPixels / (pixels.length / 4)) * 100 > 70) {
         scratchPercentageChecked = true;
         canvas.style.transition = 'opacity 0.5s ease';
         canvas.style.opacity = 0;
@@ -795,7 +802,7 @@ async function renderInventory() {
               <p style="font-size: 12px; color: var(--text-secondary); margin: 2px 0 0 0;">Quantité : <strong>x${counts[bonId]}</strong></p>
             </div>
           </div>
-          <button class="btn-primary" onclick="useInventoryToken('${bon.id}')" style="padding: 8px 16px; font-size: 13px; border-radius: 10px; width: 8em;">Utiliser <i class="ph-fill ph-sparkle"></i></button>
+          <button class="btn-primary" onclick="openUseBonModal('${bon.id}')" style="padding: 8px 16px; font-size: 13px; border-radius: 10px; width: 8em;">Utiliser <i class="ph-fill ph-sparkle"></i></button>
         </div>
       </div>
     `;
@@ -803,8 +810,33 @@ async function renderInventory() {
   });
 }
 
-async function useInventoryToken(bonId) {
-  if (!supabaseClient) return;
+function openUseBonModal(bonId) {
+  const bon = bonsData.find(b => b.id === bonId);
+  if (!bon) return;
+
+  bonIdToUse = bonId;
+
+  document.getElementById('use-bon-icon').textContent = bon.icon;
+  document.getElementById('use-bon-title').textContent = bon.title;
+  document.getElementById('use-bon-desc').textContent = bon.desc || '';
+
+  const messageInput = document.getElementById('use-bon-message');
+  messageInput.value = '';
+  messageInput.placeholder = 'Précise ta demande...';
+
+  document.getElementById('use-bon-modal').classList.add('active');
+}
+
+function closeUseBonModal() {
+  document.getElementById('use-bon-modal').classList.remove('active');
+  bonIdToUse = null;
+}
+
+async function confirmUseBon() {
+  if (!bonIdToUse || !supabaseClient) return;
+
+  const bonId = bonIdToUse;
+  const customMessage = document.getElementById('use-bon-message').value.trim();
 
   const { data, error } = await supabaseClient
     .from('user_vouchers')
@@ -816,16 +848,22 @@ async function useInventoryToken(bonId) {
 
   if (error || !data || data.length === 0) {
     showToast("Oups, ce bon n'est plus disponible.");
+    closeUseBonModal();
     return;
   }
 
   const { error: updateError } = await supabaseClient
     .from('user_vouchers')
-    .update({ status: 'used', used_at: new Date().toISOString() })
+    .update({
+      status: 'used',
+      used_at: new Date().toISOString(),
+      detail_message: customMessage || null
+    })
     .eq('id', data[0].id);
 
   if (updateError) {
     showToast("Impossible d'utiliser ce bon actuellement.");
+    closeUseBonModal();
     return;
   }
 
@@ -834,10 +872,13 @@ async function useInventoryToken(bonId) {
 
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
     to_name: "Amour",
-    message: `Elle vient d'utiliser son super pouvoir : ${bonTitle} ! ❤️`
+    message: customMessage
+      ? `Elle vient d'utiliser son super pouvoir : ${bonTitle} ! Détails : ${customMessage} ❤️`
+      : `Elle vient d'utiliser son super pouvoir : ${bonTitle} ! ❤️`
   });
 
   showToast(`✨ Pouvoir "${bonTitle}" validé ! Ton chéri a reçu un mail. 😉`);
+  closeUseBonModal();
   await renderBonsTab();
 }
 

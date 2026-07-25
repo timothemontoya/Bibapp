@@ -3,21 +3,24 @@
     "id": "bon-massage",
     "icon": "💆‍♀️",
     "title": "Bon pour un massage",
-    "cooldown_hours": 24,
-    "is_scratchable": true
+    "desc": "Un moment de détente rien que pour toi."
   },
   {
     "id": "bon-petitdej",
     "icon": "🥐",
     "title": "Petit-déjeuner au lit",
-    "cooldown_hours": 48,
-    "is_scratchable": false
+    "desc": "Un réveil tout en douceur."
   },
   {
-    "id": "bon-joker",
-    "icon": "🃏",
-    "title": "Annule une dispute",
-    "cooldown_hours": 720,
-    "is_scratchable": true
+    "id": "calin",
+    "icon": "🤗",
+    "title": "Câlin à tout moment",
+    "desc": "Un câlin gratuit, quand tu veux."
+  },
+  {
+    "id": "Chef cuistot",
+    "icon": "👨‍🍳",
+    "title": "Chef cuistot",
+    "desc": "Je te prépare le repas de ton choix."
   }
 ]

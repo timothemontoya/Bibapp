@@ -9,12 +9,17 @@ const EMAILJS_TEMPLATE_ID = "template_rla96gu";
 
 
 const CATEGORY_GRADIENTS = {
-  "Chill": "linear-gradient(135deg, #FF6B6B, #ff8f5321)",
-  "Sportif": "linear-gradient(135deg, #8E2DE2, #4b00e028)",
-  "Découverte": "linear-gradient(135deg, #11998E, #38ef7e44)",
-  "Nuit": "linear-gradient(135deg, #F80759, #bc4e9d3f)",
+  "Chill": "linear-gradient(135deg, #e66666, #f9e80040)",
+  "Sportif": "linear-gradient(135deg, #b973f7, #321f5833)",
+  "Découverte": "linear-gradient(135deg, #3ea182, #48956544)",
+  "Nuit": "linear-gradient(135deg, #131746, #bea93f64)",
   "Voyage": "linear-gradient(135deg, #FF9900, #ff550044)",
   "Erotique": "linear-gradient(135deg, #f83636, #000000c2)",
+  "Romantique": "linear-gradient(135deg, #ff758c, #ffb4d33f)",
+  "Discussion": "linear-gradient(135deg, #d2d2d2, #595c6044)",
+  "Aventure": "linear-gradient(135deg, #1e4e00, #70ff485a)",
+  "Exterieur": "linear-gradient(135deg, #96e8ff, #0073ff6f)",
+  "Maison": "linear-gradient(135deg, #ffe2ab, #e076765a)",
 };
 
 // Couleur/Dégradé par défaut si la catégorie n'est pas dans le dictionnaire
@@ -633,7 +638,7 @@ async function renderBonsTab() {
       <div class="card" style="text-align: center; padding: 30px 20px; border: 2px dashed var(--text-secondary); background: transparent; border-radius: 24px;">
         <span style="font-size: 40px;">🕒</span>
         <h3 style="margin-top: 10px; font-size: 16px;">Ticket du jour gratté !</h3>
-        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">Reviens demain pour avoir un nouveau bon ✨</p>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">Reviens demain pour avoir un nouveau bon</p>
       </div>
     `;
   }
@@ -790,7 +795,7 @@ async function renderInventory() {
               <p style="font-size: 12px; color: var(--text-secondary); margin: 2px 0 0 0;">Quantité : <strong>x${counts[bonId]}</strong></p>
             </div>
           </div>
-          <button class="btn-primary" onclick="useInventoryToken('${bon.id}')" style="padding: 8px 16px; font-size: 13px; border-radius: 10px; width: 8em;">Utiliser ✨</button>
+          <button class="btn-primary" onclick="useInventoryToken('${bon.id}')" style="padding: 8px 16px; font-size: 13px; border-radius: 10px; width: 8em;">Utiliser <i class="ph-fill ph-sparkle"></i></button>
         </div>
       </div>
     `;

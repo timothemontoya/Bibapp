@@ -455,9 +455,8 @@ body {
   cursor: pointer;
   user-select: none;
   isolation: isolate; /* Crée un contexte de calques propre */
-  border: 1px solid rgba(255, 255, 255, 0.15);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  background-color: #eaeaff00; /* Fond de secours */
+  background-color: #b48d94c4; /* Fond de secours */
 }
 
 /* Couche du dégradé : Placée AU-DESSUS de l'émoji */
@@ -496,7 +495,7 @@ body {
 }
 
 .category-pill.active {
-  background: #da5069;
+  background: #1616165b;
   color: #0059ff;
   border-color: #ffffff;
   box-shadow: 0 0 0 2px #ffffff, 0 4px 12px rgb(0, 0, 0);

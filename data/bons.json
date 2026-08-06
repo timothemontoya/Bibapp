@@ -1,26 +1,72 @@
 [
   {
-    "id": "bon-massage",
-    "icon": "💆‍♀️",
-    "title": "Bon pour un massage",
-    "desc": "Un moment de détente rien que pour toi."
+    "id": "calin",
+    "icon": "🤗",
+    "title": "Câlin à tout moment",
+    "desc": "Un câlin gratuit, quand tu veux.",
+    "rarete": 1
+  },
+  {
+    "id": "bon-pause-brain-rot",
+    "icon": "🧠",
+    "title": "Pause Brain Rot",
+    "desc": "Du brain ensemble ou seul sans aucun jugement.",
+    "rarete": 1
+  },
+  {
+    "id": "bon-photo-moi",
+    "icon": "📸",
+    "title": "Photo de moi",
+    "desc": "Une photo instantanée de moi, peu importe où je suis ou ce que je fais.",
+    "rarete": 2
+  },
+  {
+    "id": "bon-appel",
+    "icon": "📞",
+    "title": "Appel sans frontières",
+    "desc": "Je décroche ou je t'appelle dans la minute, peu importe l'heure.",
+    "rarete": 3
+  },
+  {
+    "id": "telecommande-king",
+    "icon": "🎬",
+    "title": "Maître de la soirée",
+    "desc": "Tu choisis le film, la série ou le programme sans aucune négociation.",
+    "rarete": 3
   },
   {
     "id": "bon-petitdej",
     "icon": "🥐",
     "title": "Petit-déjeuner au lit",
-    "desc": "Un réveil tout en douceur."
+    "desc": "Un réveil tout en douceur servi au lit.",
+    "rarete": 4
   },
   {
-    "id": "calin",
-    "icon": "🤗",
-    "title": "Câlin à tout moment",
-    "desc": "Un câlin gratuit, quand tu veux."
-  },
-  {
-    "id": "Chef cuistot",
+    "id": "chef-cuistot",
     "icon": "👨‍🍳",
     "title": "Chef cuistot",
-    "desc": "Je te prépare le repas de ton choix."
+    "desc": "Je te prépare le repas de ton choix.",
+    "rarete": 5
+  },
+  {
+    "id": "joker-corvee",
+    "icon": "🧽",
+    "title": "Joker Tâches Ménagères",
+    "desc": "Passe ton tour ! C'est moi qui m'occupe de la corvée du jour.",
+    "rarete": 5
+  },
+  {
+    "id": "bon-massage",
+    "icon": "💆‍♀️",
+    "title": "Bon pour un massage",
+    "desc": "Un moment de détente rien que pour toi.",
+    "rarete": 3
+  },
+  {
+    "id": "golden-ticket",
+    "icon": "🎫",
+    "title": "Golden Ticket",
+    "desc": "Tu peux demander absolument tout ce que tu veux, même une golden dans la bouche ou une golden shower !",
+    "rarete": 10
   }
 ]

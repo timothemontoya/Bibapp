@@ -649,7 +649,16 @@ async function renderBonsTab() {
       </div>
     `;
   }
-
+  // SUPPRIMER, c'est juste pour le démo, on veut que le ticket soit gratté tous les jours
+  dailyContainer.innerHTML = `
+      <div class="card" style="text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #ffe3e8 0%, #ffccd5 100%); border: 2px solid #ffb3c1; border-radius: 24px;">
+        <span style="font-size: 45px; display: block; margin-bottom: 10px; animation: bounceMini 2s infinite alternate;">🎁</span>
+        <h3 style="color: #ff2d55; font-size: 18px; font-weight: bold;">Ton Ticket Surprise est prêt !</h3>
+        <button class="btn-primary" onclick="openScratchModal()" style="background: #ff2d55; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3);">
+          🎟️ Gratter le ticket 🎟️
+        </button>
+      </div>
+    `;
   await renderInventory();
 }
 
@@ -659,7 +668,9 @@ async function openScratchModal() {
     return;
   }
 
-  selectedBon = bonsData[Math.floor(Math.random() * bonsData.length)];
+  // Tirage au sort basé sur la rareté (1 à 10)
+  selectedBon = tirerBonPondere(bonsData);
+
   document.getElementById('scratch-prize-icon').textContent = selectedBon.icon;
   document.getElementById('scratch-prize-title').textContent = selectedBon.title;
   document.getElementById('btn-close-scratch').style.display = 'none';
@@ -730,7 +741,7 @@ function initScratchCanvas() {
         if (pixels[i] === 0) transparentPixels++;
       }
 
-      if ((transparentPixels / (pixels.length / 4)) * 100 > 70) {
+      if ((transparentPixels / (pixels.length / 4)) * 100 > 60) {
         scratchPercentageChecked = true;
         canvas.style.transition = 'opacity 0.5s ease';
         canvas.style.opacity = 0;
@@ -882,6 +893,30 @@ async function confirmUseBon() {
   await renderBonsTab();
 }
 
+function tirerBonPondere(listeBons) {
+  // 1. Attribuer un poids : Rareté 1 = Poids 10, Rareté 10 = Poids 1
+  const bonsAvecPoids = listeBons.map(bon => ({
+    ...bon,
+    poids: Math.max(1, 11 - (bon.rarete || 1)) 
+  }));
+
+  // 2. Calculer le poids total de tous les bons réunis
+  const poidsTotal = bonsAvecPoids.reduce((sum, bon) => sum + bon.poids, 0);
+
+  // 3. Tirer un nombre aléatoire entre 0 et le poids total
+  let nombreAleatoire = Math.random() * poidsTotal;
+
+  // 4. Parcourir les bons pour trouver celui qui correspond au lancer
+  for (const bon of bonsAvecPoids) {
+    if (nombreAleatoire < bon.poids) {
+      return bon; // Bon sélectionné !
+    }
+    nombreAleatoire -= bon.poids;
+  }
+
+  return bonsAvecPoids[0]; // Sécurité
+}
+
 // ==========================================
 // 🔥 STREAK & DAILY BOX
 // ==========================================
@@ -890,9 +925,15 @@ async function checkStreak() {
   const today = new Date();
   const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
+  let streak = 1;
+  let isFirstLoginToday = false;
+  let streakBroken = false; // Nouvelle variable pour détecter la casse
+
   if (error || !data) {
+    // Toute première connexion
     await supabaseClient.from('progress_tracker').insert({ current_streak: 1, last_connection: today.toISOString() });
     document.getElementById('streak-count').textContent = "1";
+    handleStreakMilestones(1, false); 
     return;
   }
 
@@ -900,17 +941,24 @@ async function checkStreak() {
   const lastConnectionMidnight = new Date(lastConnection.getFullYear(), lastConnection.getMonth(), lastConnection.getDate());
   const diffDays = Math.round((todayMidnight - lastConnectionMidnight) / (1000 * 60 * 60 * 24));
 
-  let streak = data.current_streak;
+  streak = data.current_streak;
 
   if (diffDays === 1) {
+    // Connexion le jour suivant : on augmente le streak
     streak += 1;
+    isFirstLoginToday = true;
     await supabaseClient.from('progress_tracker').update({
       current_streak: streak,
       last_connection: today.toISOString(),
       max_streak: Math.max(streak, data.max_streak || 0)
     }).eq('id', data.id);
   } else if (diffDays > 1) {
+    // Si le streak précédent était > 1 et qu'elle a raté un jour, la chaîne est brisée
+    if (streak > 1) {
+      streakBroken = true;
+    }
     streak = 1;
+    isFirstLoginToday = true;
     await supabaseClient.from('progress_tracker').update({
       current_streak: streak,
       last_connection: today.toISOString()
@@ -918,6 +966,11 @@ async function checkStreak() {
   }
 
   document.getElementById('streak-count').textContent = streak;
+
+  // Si c'est sa première connexion de la journée, on affiche le pop-up en lui passant l'info de la casse
+  if (isFirstLoginToday) {
+    handleStreakMilestones(streak, streakBroken);
+  }
 }
 
 function openDailyBox() {
@@ -934,6 +987,90 @@ function openDailyBox() {
 function closeDailyModal() {
   document.getElementById('daily-modal').classList.remove('active');
   document.getElementById('box-status-text').textContent = "Reviens demain pour un nouveau mot doux ! ✨";
+}
+function handleStreakMilestones(streak, streakBroken) {
+  // Vérifie si on est un multiple de 15 (jour 15, 30, 45...)
+  const isMilestone = (streak > 0 && streak % 15 === 0);
+
+  // Calcule le palier cible (ex: si streak = 16, cible = 30. Si streak = 15, cible = 15)
+  let nextMilestone = Math.ceil(streak / 15) * 15;
+  if (nextMilestone === 0) nextMilestone = 15; // Sécurité pour le tout début
+  
+  // Le palier précédent pour savoir combien de jours afficher dans le cycle actuel
+  let prevMilestone = nextMilestone - 15;
+
+  const totalCircles = 15; // Toujours 15 ronds par cycle
+  let filledCircles = streak - prevMilestone;
+  
+  // Cas particulier : le jour de la victoire (ex: jour 15), on veut afficher les 15 ronds pleins
+  if (filledCircles === 0 && isMilestone) {
+    filledCircles = 15;
+  }
+
+  showStreakModal(streak, nextMilestone, totalCircles, filledCircles, isMilestone, streakBroken);
+
+  if (isMilestone) {
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_name: "Admin Love (Moi)",
+      message: `🔥 ALERTE RÉCOMPENSE ! Ta chérie vient d'atteindre le palier des ${streak} jours ! Prépare la surprise ! 🎁`
+    }).then(() => console.log("Email palier envoyé !"), (err) => console.error("Erreur email:", err));
+  }
+}
+
+function showStreakModal(streak, nextMilestone, totalCircles, filledCircles, isMilestone, streakBroken) {
+  const container = document.getElementById('streak-circles-container');
+  container.innerHTML = ''; // Nettoyer les anciens ronds
+
+  const daysLeft = nextMilestone - streak;
+
+  // Gestion des textes et de l'affichage selon le statut
+  if (streakBroken) {
+    document.getElementById('streak-modal-title').textContent = "Chaîne brisée 💔";
+    document.getElementById('streak-modal-desc').textContent = "Oh non, tu as raté un jour... Ce n'est pas grave, on repart de plus belle !";
+    document.getElementById('streak-reward-text').style.display = 'none';
+  } else if (isMilestone) {
+    document.getElementById('streak-modal-title').textContent = `🔥 ${streak} Jours d'affilée ! 🔥`;
+    document.getElementById('streak-modal-desc').textContent = `Youpi mon ptit bébé !`;
+    document.getElementById('streak-reward-text').style.display = 'block';
+
+    if (typeof confetti === 'function') {
+      const duration = 3000;
+      const end = Date.now() + duration;
+      (function frame() {
+        confetti({ zIndex: 9999, particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff2d55', '#ffb7b2', '#ffffff'] });
+        confetti({ zIndex: 9999, particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff2d55', '#ffb7b2', '#ffffff'] });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      }());
+    }
+  } else {
+    document.getElementById('streak-modal-title').textContent = "Bravo pour ta régularité !";
+    document.getElementById('streak-modal-desc').textContent = `Plus que ${daysLeft} jour${daysLeft > 1 ? 's' : ''} avant une surprise`;
+    document.getElementById('streak-reward-text').style.display = 'none';
+  }
+
+  // Génération des 15 ronds
+  for (let i = 1; i <= totalCircles; i++) {
+    const circle = document.createElement('div');
+    circle.className = 'streak-circle';
+    
+    if (i <= filledCircles) {
+      circle.classList.add('filled');
+      // Si le rond est rempli, on met la coche, SAUF si c'est le 15ème (on garde le cadeau)
+      circle.innerHTML = (i === totalCircles) ? '<i class="ph ph-bold ph-gift"></i>' : '✓';
+    } else {
+      // Si le rond est vide, on n'affiche rien, SAUF si c'est le 15ème (on affiche le cadeau)
+      if (i === totalCircles) {
+        circle.innerHTML = '<i class="ph ph-bold ph-gift"></i>';
+      }
+    }
+    
+    container.appendChild(circle);
+  }
+
+  document.getElementById('streak-progress-modal').classList.add('active');
+}
+function closeStreakModal() {
+  document.getElementById('streak-progress-modal').classList.remove('active');
 }
 
 // ==========================================

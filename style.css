@@ -643,6 +643,57 @@ body {
 .nav-icon { font-size: 22px; }
 
 /* ========================================== */
+/* STREAK PROGRESS (Design fidèle au croquis) */
+/* ========================================== */
+.streak-circle {
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box; /* S'assure que la bordure ne déforme pas le cercle */
+  border-radius: 50%;
+  border: 2px solid #1c1c1e;
+  
+  /* Centrage parfait avec Grid et suppression de la hauteur de ligne */
+  display: inline-grid;
+  place-items: center;
+  line-height: 1;
+  padding: 0;
+  
+  font-size: 15px;
+  font-weight: bold;
+  background-color: transparent;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.streak-circle.filled {
+  background-color: #ff0059; /* Rouge bordeaux comme sur le croquis */
+  color: white;
+  border-color: #ff5b69;
+  transform: scale(1.1); /* Petit effet de pop */
+}
+
+/* Adaptation au mode nuit */
+.dark-mode .streak-circle {
+   border-color: #f3f4fb;
+}
+.dark-mode .streak-circle.filled {
+   background-color: #ff2d55;
+   border-color: #ff2d55;
+}
+
+/* ========================================== */
+/* VERROUILLAGE DES DEPLACEMENTS NON VOULUS  */
+/* ========================================== */
+
+/* 1. Modale Streak : Bloquer le glissement horizontal (gauche/droite) */
+#streak-progress-modal,
+#streak-progress-modal .memory-form-box {
+  overflow-x: hidden !important;
+  touch-action: pan-y; /* Conserve uniquement le défilement vertical si la modale dépasse */
+  overscroll-behavior-x: none;
+}
+
+
+/* ========================================== */
 /* ANIMATIONS (KEYFRAMES)                     */
 /* ========================================== */
 @keyframes bounce {

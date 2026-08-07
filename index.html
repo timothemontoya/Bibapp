@@ -23,12 +23,47 @@
 </head>
 <body>
 
-  <div class="app-container">
+  <!-- ÉCRAN DE CHARGEMENT (évite d'afficher le contenu avant vérification de la session) -->
+  <div id="auth-loading" class="auth-loading">
+    <div class="auth-spinner"></div>
+  </div>
+
+  <!-- ÉCRAN DE CONNEXION -->
+  <div id="auth-screen" class="auth-screen is-hidden">
+    <div class="auth-box">
+      <h1 class="auth-title">BIBAPP <i class="ph-fill ph-lock-key icon-emoji"></i></h1>
+      <p class="auth-subtitle">Connecte-toi pour accéder à votre espace</p>
+      <form id="login-form" class="auth-form" autocomplete="on">
+        <input type="email" id="login-email" class="auth-input" placeholder="Adresse e-mail" autocomplete="username" required>
+        <input type="password" id="login-password" class="auth-input" placeholder="Mot de passe" autocomplete="current-password" required>
+        <p id="auth-error" class="auth-error"></p>
+        <button type="submit" class="btn-primary auth-submit">Se connecter</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="app-container is-hidden">
     <!-- ACCUEIL -->
     <section id="view-accueil" class="app-view active">
       <header class="view-header">
-        <div class="theme-toggle" onclick="toggleNightMode()" id="night-mode-button" aria-label="Mode nuit">
-          <span class="theme-dot"><i class="ph-fill ph-moon icon-emoji"></i></span>
+        <div class="settings-menu-wrapper">
+          <div class="theme-toggle" onclick="toggleSettingsMenu()" id="settings-button" aria-label="Réglages">
+            <span class="theme-dot"><i class="ph-fill ph-gear-six icon-emoji"></i></span>
+          </div>
+          <div id="settings-menu" class="settings-menu is-hidden">
+            <button class="settings-menu-item" onclick="toggleNightMode()">
+              <span class="theme-dot" id="night-mode-icon"><i class="ph-fill ph-moon icon-emoji"></i></span>
+              <span>Mode nuit</span>
+            </button>
+            <button class="settings-menu-item" onclick="resetEncryptionKey()">
+              <span class="theme-dot"><i class="ph-fill ph-key icon-emoji"></i></span>
+              <span>Changer la clé de chiffrement</span>
+            </button>
+            <button class="settings-menu-item settings-menu-danger" onclick="handleLogout()">
+              <span class="theme-dot"><i class="ph-fill ph-sign-out icon-emoji"></i></span>
+              <span>Déconnexion</span>
+            </button>
+          </div>
         </div>
         <h1>BIBAPP</h1>
         <div class="streak-badge">
@@ -277,6 +312,24 @@
   <div id="toast-container" class="toast-container"></div>
 
   <div id="overlay" class="overlay"></div>
+
+  <!-- MODALE CLÉ DE CHIFFREMENT -->
+  <div id="encryption-key-modal" class="custom-modal-overlay">
+    <div class="memory-form-box" style="text-align: center;">
+      <h2>🔐 Clé de chiffrement</h2>
+      <p style="color: var(--text-secondary); font-size: 14px; margin-top: -5px;">
+        Choisissez une clé partagée entre vous deux (différente de vos mots de passe de connexion).
+        Elle protège vos photos et messages : gardez-la précieusement, elle ne peut pas être récupérée si vous l'oubliez.
+      </p>
+      <div class="form-group" style="text-align: left;">
+        <input type="password" id="encryption-passphrase-input" class="auth-input" placeholder="Votre clé de chiffrement partagée">
+        <p id="encryption-key-error" class="auth-error"></p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" style="width: 100%;" onclick="confirmEncryptionKey()">Valider</button>
+      </div>
+    </div>
+  </div>
   
   <!-- MODALE STREAK / RECOMPENSE -->
   <div id="streak-progress-modal" class="custom-modal-overlay">

@@ -48,14 +48,203 @@ let platsRoulette = platsDeBase.map(plat => ({ name: plat, isBase: true, active:
 let currentRotation = 0;
 
 if (SUPABASE_URL !== "https://TON_PROJET.supabase.co") {
-  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,     // la session reste active après fermeture/rechargement du site
+      autoRefreshToken: true,   // le jeton de connexion se renouvelle tout seul
+      detectSessionInUrl: true
+    }
+  });
 }
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
 // ==========================================
+// 🔐 AUTHENTIFICATION
+// ==========================================
+let appInitialized = false;
+
+function showAuthScreen() {
+  document.getElementById('auth-screen')?.classList.remove('is-hidden');
+  document.querySelector('.app-container')?.classList.add('is-hidden');
+}
+
+function showApp() {
+  document.getElementById('auth-screen')?.classList.add('is-hidden');
+  document.querySelector('.app-container')?.classList.remove('is-hidden');
+}
+
+function hideAuthLoading() {
+  document.getElementById('auth-loading')?.classList.add('is-hidden');
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('auth-error');
+  const submitBtn = document.querySelector('#login-form .auth-submit');
+
+  errorEl.textContent = '';
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Connexion...';
+
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errorEl.textContent = "E-mail ou mot de passe incorrect.";
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Se connecter';
+  }
+  // En cas de succès, onAuthStateChange (ci-dessous) affiche l'app automatiquement.
+}
+
+async function handleLogout() {
+  if (!supabaseClient) return;
+  await supabaseClient.auth.signOut();
+  appInitialized = false;
+  // On recharge pour repartir sur un état propre (données en mémoire vidées).
+  window.location.reload();
+}
+
+function initAuth() {
+  if (!supabaseClient) {
+    // Pas de Supabase configuré : impossible de vérifier une session, on ouvre en mode démo.
+    hideAuthLoading();
+    showApp();
+    if (!appInitialized) { appInitialized = true; initApp(); }
+    return;
+  }
+
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    hideAuthLoading();
+    if (session) {
+      showApp();
+      if (!appInitialized) {
+        appInitialized = true;
+        initApp();
+      }
+    } else {
+      appInitialized = false;
+      showAuthScreen();
+      const submitBtn = document.querySelector('#login-form .auth-submit');
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Se connecter'; }
+    }
+  });
+}
+
+// ==========================================
+// 🔏 CHIFFREMENT CÔTÉ CLIENT (AES-GCM)
+// ==========================================
+// Les photos et messages sont chiffrés dans le navigateur AVANT d'être envoyés à Supabase.
+// Personne ayant accès à la base (même Supabase) ne peut lire le contenu en clair sans
+// la clé de chiffrement partagée, choisie librement par vous deux (différente du mot de passe de connexion).
+const ENC_KEY_STORAGE = 'bibapp-enc-key-v1';
+const ENC_SALT = 'bibapp-static-salt-v1'; // pas besoin d'être secret, juste constant
+let encryptionKey = null; // CryptoKey gardée en mémoire pour la session
+let encryptionKeyResolvers = [];
+
+function bufferToBase64(buffer) {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+function base64ToBuffer(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+
+async function deriveKeyFromPassphrase(passphrase) {
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode(ENC_SALT), iterations: 150000, hash: 'SHA-256' },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    true,
+    ['encrypt', 'decrypt']
+  );
+}
+
+function openEncryptionKeyModal() {
+  document.getElementById('encryption-key-modal')?.classList.add('active');
+}
+function closeEncryptionKeyModal() {
+  document.getElementById('encryption-key-modal')?.classList.remove('active');
+}
+
+// Renvoie la clé AES en mémoire, la relit depuis ce téléphone/navigateur si déjà entrée,
+// ou demande de la saisir une seule fois (via la modale) sinon.
+function ensureEncryptionKey() {
+  if (encryptionKey) return Promise.resolve(encryptionKey);
+
+  const cached = localStorage.getItem(ENC_KEY_STORAGE);
+  if (cached) {
+    return crypto.subtle.importKey('raw', base64ToBuffer(cached), 'AES-GCM', true, ['encrypt', 'decrypt'])
+      .then(key => { encryptionKey = key; return key; });
+  }
+
+  return new Promise((resolve) => {
+    encryptionKeyResolvers.push(resolve);
+    openEncryptionKeyModal();
+  });
+}
+
+async function confirmEncryptionKey() {
+  const input = document.getElementById('encryption-passphrase-input');
+  const errorEl = document.getElementById('encryption-key-error');
+  const passphrase = input.value;
+
+  if (!passphrase || passphrase.length < 4) {
+    errorEl.textContent = "Choisis une clé d'au moins 4 caractères.";
+    return;
+  }
+
+  const key = await deriveKeyFromPassphrase(passphrase);
+  const rawKey = await crypto.subtle.exportKey('raw', key);
+  localStorage.setItem(ENC_KEY_STORAGE, bufferToBase64(rawKey));
+  encryptionKey = key;
+
+  input.value = '';
+  errorEl.textContent = '';
+  closeEncryptionKeyModal();
+
+  encryptionKeyResolvers.forEach(resolve => resolve(key));
+  encryptionKeyResolvers = [];
+}
+
+async function encryptText(plainText) {
+  if (plainText === null || plainText === undefined || plainText === '') return plainText;
+  const key = await ensureEncryptionKey();
+
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(plainText));
+
+  return `enc:${bufferToBase64(iv)}:${bufferToBase64(ciphertext)}`;
+}
+
+async function decryptText(value) {
+  if (!value || typeof value !== 'string' || !value.startsWith('enc:')) return value;
+  const key = await ensureEncryptionKey();
+
+  try {
+    const [, ivB64, dataB64] = value.split(':');
+    const plainBuffer = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: new Uint8Array(base64ToBuffer(ivB64)) },
+      key,
+      base64ToBuffer(dataB64)
+    );
+    return new TextDecoder().decode(plainBuffer);
+  } catch (e) {
+    console.error("Erreur de déchiffrement (mauvaise clé ?) :", e);
+    return "🔒 Impossible de déchiffrer (mauvaise clé de chiffrement).";
+  }
+}
+
+// ==========================================
 // 🚀 INITIALISATION DE L'APPLICATION
 // ==========================================
-document.addEventListener('DOMContentLoaded', async () => {
+async function initApp() {
   updateRouletteSystem();
   
   await Promise.all([
@@ -74,6 +263,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.warn("Supabase n'est pas configuré. Mode démo actif.");
     loadDemoData();
   }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const loginForm = document.getElementById('login-form');
+  if (loginForm) loginForm.addEventListener('submit', handleLogin);
+  initAuth();
 });
 
 // --- Navigation ---
@@ -546,14 +741,17 @@ async function saveDateMemory() {
 
   const comment = document.getElementById('memory-comment').value;
 
+  const encryptedComment = await encryptText(comment);
+  const encryptedPhoto = await encryptText(loadedPhotoBase64);
+
   const { error } = await supabaseClient.from('cards_state').upsert({
     card_id: tempCompletedCardId,
     is_revealed: true,
     is_completed: true,
     completed_at: new Date().toISOString(),
     note: selectedRating,
-    comment: comment,
-    photo_base64: loadedPhotoBase64
+    comment: encryptedComment,
+    photo_base64: encryptedPhoto
   }, { onConflict: 'card_id' });
 
   if (error) {
@@ -587,18 +785,25 @@ function openViewMemoryModal(event, cardId) {
 
   const photoWrapper = document.getElementById('view-mem-photo-wrapper');
   const imgElement = document.getElementById('view-mem-photo');
+  const noteEl = document.getElementById('view-mem-note');
+  const commentEl = document.getElementById('view-mem-comment');
 
-  if (state.photo_base64) {
-    imgElement.src = state.photo_base64;
-    photoWrapper.style.display = 'block';
-  } else {
-    photoWrapper.style.display = 'none';
-  }
-
-  document.getElementById('view-mem-note').textContent = starsToText(state.note);
-  document.getElementById('view-mem-comment').textContent = state.comment ? `« ${state.comment} »` : "Aucun ressenti enregistré.";
+  noteEl.textContent = starsToText(state.note);
+  photoWrapper.style.display = 'none';
+  commentEl.textContent = "Déchiffrement...";
 
   document.getElementById('view-memory-modal').classList.add('active');
+
+  (async () => {
+    const decryptedPhoto = await decryptText(state.photo_base64);
+    if (decryptedPhoto) {
+      imgElement.src = decryptedPhoto;
+      photoWrapper.style.display = 'block';
+    }
+
+    const decryptedComment = await decryptText(state.comment);
+    commentEl.textContent = decryptedComment ? `« ${decryptedComment} »` : "Aucun ressenti enregistré.";
+  })();
 }
 
 function closeViewMemoryModal() {
@@ -847,6 +1052,7 @@ async function confirmUseBon() {
 
   const bonId = bonIdToUse;
   const customMessage = document.getElementById('use-bon-message').value.trim();
+  const encryptedMessage = await encryptText(customMessage);
 
   const { data, error } = await supabaseClient
     .from('user_vouchers')
@@ -867,7 +1073,7 @@ async function confirmUseBon() {
     .update({
       status: 'used',
       used_at: new Date().toISOString(),
-      detail_message: customMessage || null
+      detail_message: encryptedMessage || null
     })
     .eq('id', data[0].id);
 
@@ -1223,12 +1429,41 @@ function toggleNightMode() {
 }
 
 function updateNightModeIcon() {
-  const dot = document.querySelector('#night-mode-button .theme-dot');
+  const dot = document.getElementById('night-mode-icon');
   if (dot) {
     dot.innerHTML = document.documentElement.classList.contains('dark-mode')
       ? '<i class="ph-fill ph-sun icon-emoji"></i>'
       : '<i class="ph-fill ph-moon icon-emoji"></i>';
   }
+}
+
+// --- Volet de réglages ---
+function toggleSettingsMenu() {
+  document.getElementById('settings-menu')?.classList.toggle('is-hidden');
+}
+
+function closeSettingsMenu() {
+  document.getElementById('settings-menu')?.classList.add('is-hidden');
+}
+
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('settings-menu');
+  const button = document.getElementById('settings-button');
+  if (!menu || menu.classList.contains('is-hidden')) return;
+  if (menu.contains(e.target) || (button && button.contains(e.target))) return;
+  closeSettingsMenu();
+});
+
+function resetEncryptionKey() {
+  const confirmed = window.confirm(
+    "Supprimer la clé de chiffrement enregistrée sur cet appareil ?\n\nElle te sera redemandée à la prochaine photo ou message. Assure-toi de connaître la passphrase partagée avant de continuer, sinon tu ne pourras plus déchiffrer les anciens souvenirs sur cet appareil."
+  );
+  if (!confirmed) return;
+
+  localStorage.removeItem(ENC_KEY_STORAGE);
+  encryptionKey = null;
+  closeSettingsMenu();
+  showToast("🔑 Clé de chiffrement supprimée sur cet appareil.");
 }
 
 function loadDemoData() {

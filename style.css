@@ -62,6 +62,141 @@ body {
   box-shadow: 0 0 40px rgba(0,0,0,0.5);
 }
 
+.is-hidden { display: none !important; }
+
+.settings-menu-wrapper { position: relative; }
+
+.settings-menu {
+  position: absolute;
+  top: 46px;
+  left: 0;
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 230px;
+  z-index: 500;
+}
+.settings-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+}
+.settings-menu-item .theme-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  margin-right: 0;
+  flex-shrink: 0;
+}
+.settings-menu-item:hover { background: rgba(0, 0, 0, 0.05); }
+.settings-menu-danger { color: #ff2d55; }
+.dark-mode .settings-menu { background: var(--card-bg); }
+.dark-mode .settings-menu-item:hover { background: rgba(255, 255, 255, 0.08); }
+.dark-mode .settings-menu-item .theme-dot { background: rgba(255, 255, 255, 0.1); }
+
+/* ========================================== */
+/* ÉCRAN DE CONNEXION                         */
+/* ========================================== */
+.auth-loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  z-index: 10000;
+}
+.auth-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--primary, #ff4a5a);
+  animation: authSpin 0.8s linear infinite;
+}
+@keyframes authSpin { to { transform: rotate(360deg); } }
+
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  z-index: 9999;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.auth-box {
+  width: 100%;
+  max-width: 380px;
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 32px 24px;
+  box-shadow: var(--shadow);
+  box-sizing: border-box;
+  text-align: center;
+  color: var(--text-primary);
+}
+.auth-title {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  color: var(--text-primary);
+}
+.auth-subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0 0 24px 0;
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 15px;
+  box-sizing: border-box;
+  background: var(--bg-color);
+  color: var(--text-primary);
+}
+.auth-input:focus { outline: 2px solid var(--primary); }
+.auth-error {
+  color: #ff2d55;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 16px;
+  margin: 0;
+}
+.auth-submit { width: 100%; margin: 4px 0 0 0; }
+.auth-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.dark-mode .auth-input { border-color: rgba(255, 255, 255, 0.15); }
+
 .icon-emoji {
   width: 1em;
   height: 1em;
@@ -636,9 +771,9 @@ body {
   position: absolute; bottom: 0; left: 0; width: 100%; height: 85px;
   background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(0,0,0,0.05);
-  display: flex; justify-content: center; align-items: flex-start; gap: 60px; padding-top: 10px; padding-bottom: 25px; z-index: 90;
+  display: flex; justify-content: space-around; align-items: flex-start; padding-top: 10px; padding-bottom: 25px; z-index: 90;
 }
-.nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 10px; font-weight: 500; cursor: pointer; transition: color 0.2s ease; }
+.nav-item { background: none; border: none; display: flex; flex: 1; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); font-size: 10px; font-weight: 500; cursor: pointer; transition: color 0.2s ease; }
 .nav-item.active { color: var(--primary); }
 .nav-icon { font-size: 22px; }
 

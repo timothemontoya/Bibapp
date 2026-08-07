@@ -555,8 +555,8 @@ function genererCartesDates() {
   sortedDates.forEach(date => {
     const state = cardsStateMap[date.id] || {};
     const buttonHtml = activeSubTab === 'todo' 
-      ? `<button class="btn-validate" onclick="openCompleteModal(event, '${date.id}')">Terminé ! ✅</button>` 
-      : `<button class="btn-validate" style="background:#5856d6;" onclick="openViewMemoryModal(event, '${date.id}')">📸 Souvenir</button>`;
+      ? `<button class="btn-validate" onclick="openCompleteModal(event, '${date.id}')">Terminé ! <i class="ph-fill ph-check-fat"></i></button>` 
+      : `<button class="btn-validate" style="background:#5856d6;" onclick="openViewMemoryModal(event, '${date.id}')">Souvenirs <i class="ph-fill ph-camera"></i></button>`;
     const favoriteHtml = state.is_revealed
       ? `<button class="favorite-btn ${state.is_favorite ? 'active' : ''}" onclick="toggleFavoriteDate(event, '${date.id}')" aria-label="Mettre en favori">
           <i class="${state.is_favorite ? 'ph-fill' : 'ph'} ph-star icon-emoji"></i>
@@ -911,10 +911,10 @@ async function renderBonsTab() {
   if (!scratched) {
     dailyContainer.innerHTML = `
       <div class="card" style="text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #ffe3e8 0%, #ffccd5 100%); border: 2px solid #ffb3c1; border-radius: 24px;">
-        <span style="font-size: 45px; display: block; margin-bottom: 10px; animation: bounceMini 2s infinite alternate;">🎁</span>
-        <h3 style="color: #ff2d55; font-size: 18px; font-weight: bold;">Ton Ticket Surprise est prêt !</h3>
+        <span style="font-size: 45px; display: block; margin-bottom: 10px; animation: bounceMini 2s infinite alternate;"><img src="assets/gift.png" alt="🎁" style="width: 20%; height: 20%;"></span>
+        <h3 style="color: #ff2d55; font-size: 18px; font-weight: bold; margin-top: 10px;">Ton Ticket Surprise est prêt !</h3>
         <button class="btn-primary" onclick="openScratchModal()" style="background: #ff2d55; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3);">
-          🎟️ Gratter le ticket 🎟️
+          Gratter le ticket
         </button>
       </div>
     `;
@@ -930,10 +930,10 @@ async function renderBonsTab() {
   // SUPPRIMER, c'est juste pour le démo, on veut que le ticket soit gratté tous les jours
   dailyContainer.innerHTML = `
       <div class="card" style="text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #ffe3e8 0%, #ffccd5 100%); border: 2px solid #ffb3c1; border-radius: 24px;">
-        <span style="font-size: 45px; display: block; margin-bottom: 10px; animation: bounceMini 2s infinite alternate;">🎁</span>
-        <h3 style="color: #ff2d55; font-size: 18px; font-weight: bold;">Ton Ticket Surprise est prêt !</h3>
+        <span style="font-size: 45px; display: block; margin-bottom: 5px; animation: bounceMini 2s infinite alternate;"><img src="assets/gift.gif" alt="🎁" style="width: 30%; height: 30%;"></span>
+        <h3 style="color: #ff2d55; font-size: 18px; font-weight: bold; margin-top: 5px;">Ton Ticket Surprise est prêt !</h3>
         <button class="btn-primary" onclick="openScratchModal()" style="background: #ff2d55; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3);">
-          🎟️ Gratter le ticket 🎟️
+          Gratter le ticket
         </button>
       </div>
     `;
@@ -952,10 +952,60 @@ async function openScratchModal() {
   document.getElementById('scratch-prize-icon').textContent = selectedBon.icon;
   document.getElementById('scratch-prize-title').textContent = selectedBon.title;
   document.getElementById('btn-close-scratch').style.display = 'none';
+  document.querySelector('.scratch-prize-underlay')?.classList.remove('ready');
 
   document.getElementById('scratch-modal').classList.add('active');
   scratchPercentageChecked = false;
   setTimeout(initScratchCanvas, 150);
+}
+
+// 🖼️ Remplace ce fichier par ton image holographique (mets-la dans le dossier assets/ du site)
+const SCRATCH_HOLO_IMAGE = 'assets/scratch-holo.png';
+// 🔊 Remplace ce fichier par ton propre bruit de grattage (mets-le dans le dossier assets/ du site)
+const SCRATCH_SOUND_FILE = 'assets/scratch-sound.mp3';
+let scratchSoundAudio = null;
+
+function getScratchSound() {
+  if (!scratchSoundAudio) {
+    scratchSoundAudio = new Audio(SCRATCH_SOUND_FILE);
+    scratchSoundAudio.loop = true;
+    scratchSoundAudio.volume = 0.5;
+  }
+  return scratchSoundAudio;
+}
+
+function playScratchSound() {
+  const sound = getScratchSound();
+  if (sound.paused) {
+    sound.currentTime = 0;
+    sound.play().catch(() => {}); // Ignore le blocage éventuel du navigateur
+  }
+}
+
+function stopScratchSound() {
+  if (!scratchSoundAudio) return;
+  scratchSoundAudio.pause();
+  scratchSoundAudio.currentTime = 0;
+}
+
+function drawImageCover(ctx, img, canvasWidth, canvasHeight) {
+  const imgRatio = img.width / img.height;
+  const canvasRatio = canvasWidth / canvasHeight;
+  let drawWidth, drawHeight, offsetX, offsetY;
+
+  if (imgRatio > canvasRatio) {
+    drawHeight = canvasHeight;
+    drawWidth = img.width * (canvasHeight / img.height);
+    offsetX = (canvasWidth - drawWidth) / 2;
+    offsetY = 0;
+  } else {
+    drawWidth = canvasWidth;
+    drawHeight = img.height * (canvasWidth / img.width);
+    offsetX = 0;
+    offsetY = (canvasHeight - drawHeight) / 2;
+  }
+
+  ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 }
 
 function initScratchCanvas() {
@@ -969,14 +1019,34 @@ function initScratchCanvas() {
   canvas.width = wrapper.offsetWidth;
   canvas.height = wrapper.offsetHeight;
 
-  ctx.fillStyle = '#cfd8dc'; 
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const holoImg = new Image();
+  holoImg.onload = () => {
+    drawImageCover(ctx, holoImg, canvas.width, canvas.height);
+    finishScratchLayer();
+  };
+  holoImg.onerror = () => {
+    // Image introuvable : on retombe sur le gris par défaut plutôt que de casser le jeu.
+    ctx.fillStyle = '#cfd8dc';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    finishScratchLayer();
+  };
+  holoImg.src = SCRATCH_HOLO_IMAGE;
 
-  ctx.font = 'bold 16px -apple-system, sans-serif';
-  ctx.fillStyle = '#78909c';
-  ctx.textAlign = 'center';
-  ctx.fillText('GRATTE ICI ! 🪙', canvas.width / 2, canvas.height / 2 + 5);
+  function finishScratchLayer() {
+    ctx.font = 'bold 16px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 5;
+    ctx.shadowBlur = 0;
 
+    // La couche du dessus est maintenant peinte : on peut révéler le prix en dessous sans risque de flash.
+    document.querySelector('.scratch-prize-underlay')?.classList.add('ready');
+
+    attachScratchListeners();
+  }
+
+  function attachScratchListeners() {
   let isDrawing = false;
   ctx.globalCompositeOperation = 'destination-out'; 
   ctx.lineWidth = 38; 
@@ -995,6 +1065,7 @@ function initScratchCanvas() {
     const { x, y } = getCoordinates(e);
     ctx.beginPath();
     ctx.moveTo(x, y);
+    playScratchSound();
   }
 
   function draw(e) {
@@ -1006,7 +1077,10 @@ function initScratchCanvas() {
     checkScratchedPercentage();
   }
 
-  function stopDrawing() { isDrawing = false; }
+  function stopDrawing() {
+    isDrawing = false;
+    stopScratchSound();
+  }
 
   let checkTimeout;
   function checkScratchedPercentage() {
@@ -1021,6 +1095,7 @@ function initScratchCanvas() {
 
       if ((transparentPixels / (pixels.length / 4)) * 100 > 60) {
         scratchPercentageChecked = true;
+        stopScratchSound();
         canvas.style.transition = 'opacity 0.5s ease';
         canvas.style.opacity = 0;
         setTimeout(() => { canvas.style.display = 'none'; }, 500);
@@ -1046,9 +1121,11 @@ function initScratchCanvas() {
   canvas.addEventListener('mousemove', draw);
   canvas.addEventListener('mouseup', stopDrawing);
   canvas.addEventListener('mouseleave', stopDrawing);
+  }
 }
 
 async function closeScratchModal() {
+  stopScratchSound();
   document.getElementById('scratch-modal').classList.remove('active');
   await renderBonsTab();
 }

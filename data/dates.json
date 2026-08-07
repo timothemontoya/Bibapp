@@ -3,7 +3,7 @@
     "id": "date-card-1",
     "title": "Cabane Cosy",
     "email_title": "Cabane Cosy de Salon",
-    "category": "Chill 🍿",
+    "category": ["Maison 🏠", "Chill 🍿"],
     "description": "Ce soir on construit un fort géant avec des draps dans le salon, et on y regarde un film !",
     "options": ["Pop-corn Sucré", "Pop-corn Salé"],
     "theme": "pink-theme"
@@ -12,7 +12,7 @@
     "id": "date-card-2",
     "title": "Dîner surprise",
     "email_title": "Dîner aux chandelles improvisé",
-    "category": "Romantique 🕯️",
+    "category": ["Romantique 🕯️"],
     "description": "Je m'occupe de cuisiner un repas gastronomique secret. Mets ta plus jolie tenue !",
     "options": ["Vin Rouge", "Champagne"],
     "theme": "red-theme"
@@ -21,7 +21,7 @@
     "id": "date-card-3",
     "title": "Yoga en duo",
     "email_title": "Yoga en duo",
-    "category": ["Chill 🍿"],
+    "category": ["Chill 🍿", "Insolite 🎭"],
     "description": "On se lance dans une séance de yoga en duo pour se détendre et on doit se prendre en photo sur certaines figures drôles.",
     "theme": "red-theme"
   },
@@ -29,7 +29,7 @@
     "id": "date-card-4",
     "title": "Stargazing Night",
     "email_title": "Stargazing Night",
-    "category": ["Chill 🍿", "Nuit 🌙", "Exterieur 🏞️"],
+    "category": ["Aventure 🧭", "Romantique 🕯️"],
     "description": "On sort les couvertures et on va observer les étoiles !",
     "theme": "purple-theme"
   },
@@ -37,7 +37,7 @@
     "id": "date-card-5",
     "title": "Soirée débat",
     "email_title": "Soirée débat",
-    "category": ["Nuit 🌙", "Discussion 💭"],
+    "category": ["Chill 🍿", "Maison 🏠"],
     "description": "On choisit un sujet et on débat pendant 30 minutes, puis on change de sujet.",
     "theme": "white-theme"
   },
@@ -45,16 +45,15 @@
     "id": "date-card-6",
     "title": "Barman à la maison",
     "email_title": "Barman à la maison",
-    "category": ["Maison 🏠"],
+    "category": ["Maison 🏠", "Insolite 🎭"],
     "description": "On se transforme en barman et on prépare des cocktails pour l'autre.",
     "theme": "green-theme"
-  }
-  ,
+  },
   {
     "id": "date-card-7",
     "title": "Voyage aveugle",
     "email_title": "Voyage aveugle",
-    "category": ["Voyage ✈️", "Aventure 🧭"],
+    "category": ["Aventure 🧭", "Découverte 💫"],
     "description": "On se rend dans une ville ou un village proche qu'on ne connait pas et on le visite toute la journée.",
     "theme": "blue-theme"
   },
@@ -70,7 +69,7 @@
     "id": "date-card-9",
     "title": "Cours de danse",
     "email_title": "Cours de danse",
-    "category": ["Sportif 🏋️‍♂️", "Découverte 💫"],
+    "category": ["Découverte 💫", "Créatif 🎨"],
     "description": "On prend ou fait un cours de danse ensemble de n'importe quel style.",
     "theme": "yellow-theme"
   },
@@ -78,7 +77,7 @@
     "id": "date-card-10",
     "title": "Binge-wasabiching Night",
     "email_title": "Binge-wasabiching Night",
-    "category": ["Chill 🍿"],
+    "category": ["Chill 🍿", "Maison 🏠"],
     "description": "On commande des sushis et on commence un nouvel anime.",
     "theme": "red-theme"
   },
@@ -94,31 +93,31 @@
     "id": "date-card-12",
     "title": "Trempés !",
     "email_title": "Trempés !",
-    "category": [],
+    "category": ["Aventure 🧭"],
     "description": "On va dans un parc aquatique toute la journée!",
     "theme": "blue-theme"
   },
   {
     "id": "date-card-13",
-    "title": "Corps au trésor ",
-    "email_title": "Corps au trésor ",
-    "category": ["Erotique 🔞"],
+    "title": "Corps au trésor",
+    "email_title": "Corps au trésor",
+    "category": ["Erotique 🔞", "Jeux 🎮"],
     "description": "On se cache des gommettes sur le corps et l'autre doit les trouver les yeux bandés.",
     "theme": "red-theme"
   },
   {
     "id": "date-card-14",
     "title": "Shooting photo",
-    "email_title": "Shooting photo ",
-    "category": ["Erotique 🔞"],
-    "description": "Pile tu es un photographe, face tu es  mannequin. Le photographe est le maestro.",
+    "email_title": "Shooting photo",
+    "category": ["Erotique 🔞", "Insolite 🎭"],
+    "description": "Pile tu es un photographe, face tu es mannequin. Le photographe est le maestro.",
     "theme": "red-theme"
   },
   {
     "id": "date-card-15",
     "title": "Karaoké !",
     "email_title": "Karaoké !",
-    "category": ["Chill 🍿"],
+    "category": ["Insolite 🎭", "Chill 🍿"],
     "description": "On se fait une soirée de karaoké, dedans ou dans un bar et on donne tout !",
     "theme": "yellow-theme"
   },
@@ -129,10 +128,269 @@
     "category": ["Découverte 💫"],
     "description": "On se fait une visite d'un musée ou d'une exposition.",
     "theme": "yellow-theme"
+  },
+  {
+    "id": "date-card-17",
+    "title": "RP maquillage",
+    "email_title": "RP maquillage",
+    "category": ["Insolite 🎭", "Créatif 🎨"],
+    "description": "On se transforme l'un l'autre avec du maquillage et on fait un mini shooting.",
+    "theme": "pink-theme"
+  },
+  {
+    "id": "date-card-18",
+    "title": "Chasse au trésor à l'appart",
+    "email_title": "Chasse au trésor à l'appart",
+    "category": ["Jeux 🎮", "Maison 🏠"],
+    "description": "On cache des indices partout chez vous et on tente de résoudre la piste finale ensemble.",
+    "theme": "blue-theme"
+  },
+  {
+    "id": "date-card-19",
+    "title": "Deep talking",
+    "email_title": "Deep talking",
+    "category": ["Romantique 🕯️", "Chill 🍿"],
+    "description": "On prend une bouteille, on s'installe confortablement et on parle de choses profondes.",
+    "theme": "white-theme"
+  },
+  {
+    "id": "date-card-20",
+    "title": "Picnic plage",
+    "email_title": "Picnic plage",
+    "category": ["Romantique 🕯️", "Aventure 🧭"],
+    "description": "On emporte un panier gourmand, on s'installe sur la plage et on profite du coucher de soleil.",
+    "theme": "blue-theme"
+  },
+  {
+    "id": "date-card-21",
+    "title": "Bivouac",
+    "email_title": "Bivouac",
+    "category": ["Aventure 🧭"],
+    "description": "On prépare un petit bivouac et on passe une nuit sous les étoiles.",
+    "theme": "purple-theme"
+  },
+  {
+    "id": "date-card-22",
+    "title": "Hôtel luxueux avec spa",
+    "email_title": "Hôtel luxueux avec spa",
+    "category": ["Romantique 🕯️", "Détente 🛁"],
+    "description": "On réserve une nuit dans un hôtel chic avec spa et on se fait un vrai cocon.",
+    "theme": "green-theme"
+  },
+  {
+    "id": "date-card-23",
+    "title": "Tatouage au henné",
+    "email_title": "Tatouage au henné",
+    "category": ["Créatif 🎨", "Insolite 🎭"],
+    "description": "On essaie des motifs au henné et on passe un moment original et drôle.",
+    "theme": "yellow-theme"
+  },
+  {
+    "id": "date-card-24",
+    "title": "Fond d'écran Blender",
+    "email_title": "Fond d'écran Blender",
+    "category": ["Créatif 🎨", "Maison 🏠"],
+    "description": "On crée ensemble un fond d'écran stylé sur Blender et on s'amuse avec le rendu.",
+    "theme": "purple-theme"
+  },
+  {
+    "id": "date-card-25",
+    "title": "Marathon films d'horreur",
+    "email_title": "Marathon films d'horreur",
+    "category": ["Chill 🍿", "Maison 🏠"],
+    "description": "On s'installe dans le noir, on prend des snacks et on enchaîne les films d'horreur.",
+    "theme": "red-theme"
+  },
+  {
+    "id": "date-card-26",
+    "title": "Citrouilles d'Halloween",
+    "email_title": "Citrouilles d'Halloween",
+    "category": ["Créatif 🎨", "Maison 🏠"],
+    "description": "On prépare des citrouilles à décorer et on passe une soirée Halloween très cosy.",
+    "theme": "orange-theme"
+  },
+  {
+    "id": "date-card-27",
+    "title": "Grande feuille et crayons",
+    "email_title": "Grande feuille et crayons",
+    "category": ["Créatif 🎨", "Jeux 🎮"],
+    "description": "On prend une grande feuille, des crayons et on joue au pendu, au morpion, au dessin et à plein d'autres jeux.",
+    "theme": "white-theme"
+  },
+  {
+    "id": "date-card-28",
+    "title": "Bain de minuit",
+    "email_title": "Bain de minuit",
+    "category": ["Romantique 🕯️", "Détente 🛁"],
+    "description": "On met la musique, on prépare une ambiance de rêve et on prend un bain de minuit.",
+    "theme": "blue-theme"
+  },
+  {
+    "id": "date-card-29",
+    "title": "Meilleur outfit pour l'autre",
+    "email_title": "Meilleur outfit pour l'autre",
+    "category": ["Insolite 🎭", "Maison 🏠"],
+    "description": "On choisit chacun un outfit incroyable pour impressionner l'autre.",
+    "theme": "pink-theme"
+  },
+  {
+    "id": "date-card-30",
+    "title": "Coucher de soleil matinal",
+    "email_title": "Coucher de soleil matinal",
+    "category": ["Romantique 🕯️", "Aventure 🧭"],
+    "description": "On se lève tôt pour aller voir le lever ou le coucher de soleil ensemble.",
+    "theme": "orange-theme"
+  },
+  {
+    "id": "date-card-31",
+    "title": "Soirée jeux vidéo",
+    "email_title": "Soirée jeux vidéo",
+    "category": ["Jeux 🎮", "Maison 🏠"],
+    "description": "On se fait une soirée gaming complète avec snacks et ambiance de compétition.",
+    "theme": "green-theme"
+  },
+  {
+    "id": "date-card-32",
+    "title": "Recette à cuisiner ensemble",
+    "email_title": "Recette à cuisiner ensemble",
+    "category": ["Maison 🏠", "Créatif 🎨"],
+    "description": "On trouve une recette originale et on la cuisine ensemble avec plaisir.",
+    "theme": "yellow-theme"
+  },
+  {
+    "id": "date-card-33",
+    "title": "Patinoire",
+    "email_title": "Patinoire",
+    "category": ["Aventure 🧭"],
+    "description": "On va patiner, on se fait des blagues, et on termine avec un café chaud.",
+    "theme": "blue-theme"
+  },
+  {
+    "id": "date-card-34",
+    "title": "Café jeu",
+    "email_title": "Café jeu",
+    "category": ["Jeux 🎮"],
+    "description": "On découvre un café de jeux, on joue et on passe un moment simple et fun.",
+    "theme": "yellow-theme"
+  },
+  {
+    "id": "date-card-35",
+    "title": "Fort de couvertures",
+    "email_title": "Fort de couvertures",
+    "category": ["Maison 🏠", "Chill 🍿"],
+    "description": "On construit un fort géant avec des couvertures, on regarde un film et on grignote.",
+    "theme": "pink-theme"
+  },
+  {
+    "id": "date-card-36",
+    "title": "Playlist Spotify commune",
+    "email_title": "Playlist Spotify commune",
+    "category": ["Chill 🍿", "Créatif 🎨"],
+    "description": "On crée une playlist commune avec tous les sons qui nous représentent.",
+    "theme": "purple-theme"
+  },
+  {
+    "id": "date-card-37",
+    "title": "Bar en mode rencontre",
+    "email_title": "Bar en mode rencontre",
+    "category": ["Insolite 🎭", "Jeux 🎮"],
+    "description": "On se rejoint dans un bar et on joue le jeu de la rencontre improvisée.",
+    "theme": "red-theme"
+  },
+  {
+    "id": "date-card-38",
+    "title": "Salle d'arcade",
+    "email_title": "Salle d'arcade",
+    "category": ["Jeux 🎮"],
+    "description": "On passe un moment fou dans une salle d'arcade et on essaie tous les jeux.",
+    "theme": "yellow-theme"
+  },
+  {
+    "id": "date-card-39",
+    "title": "Initiation à la poterie",
+    "email_title": "Initiation à la poterie",
+    "category": ["Créatif 🎨", "Découverte 💫"],
+    "description": "On découvre la poterie ensemble et on fabrique un objet à deux.",
+    "theme": "green-theme"
+  },
+  {
+    "id": "date-card-40",
+    "title": "Parc animalier ou ferme",
+    "email_title": "Parc animalier ou ferme",
+    "category": ["Découverte 💫", "Aventure 🧭"],
+    "description": "On visite un parc animalier, une ferme ou un sanctuaire et on prend vraiment le temps de regarder.",
+    "theme": "blue-theme"
+  },
+  {
+    "id": "date-card-41",
+    "title": "Habit pour notre futur bébé",
+    "email_title": "Habit pour notre futur bébé",
+    "category": ["Romantique 🕯️"],
+    "description": "On choisit un petit habit mignon pour notre futur bébé.",
+    "theme": "pink-theme"
+  },
+  {
+    "id": "date-card-42",
+    "title": "Date à l'aquarium",
+    "email_title": "Date à l'aquarium",
+    "category": ["Découverte 💫", "Aventure 🧭"],
+    "description": "On passe la journée à l'aquarium et on se prend en photo avec les poissons.",
+    "theme": "blue-theme"
+  },
+  {
+    "id": "date-card-43",
+    "title": "Commande pour notre future maison",
+    "email_title": "Commande pour notre future maison",
+    "category": ["Maison 🏠", "Chill 🍿"],
+    "description": "On choisit ensemble des objets ou des petites choses pour notre future maison.",
+    "theme": "green-theme"
+  },
+  {
+    "id": "date-card-44",
+    "title": "Jeu du You and Me",
+    "email_title": "Jeu du You and Me",
+    "category": ["Jeux 🎮", "Insolite 🎭"],
+    "description": "L'un doit rester statique pendant que l'autre essaie de le faire craquer.",
+    "theme": "red-theme"
+  },
+  {
+    "id": "date-card-45",
+    "title": "Visite de maison à vendre",
+    "email_title": "Visite de maison à vendre",
+    "category": ["Insolite 🎭", "Aventure 🧭"],
+    "description": "On visite une maison à vendre au hasard et on imagine les futurs projets.",
+    "theme": "yellow-theme"
+  },
+  {
+    "id": "date-card-46",
+    "title": "Pyjama party",
+    "email_title": "Pyjama party",
+    "category": ["Maison 🏠", "Chill 🍿"],
+    "description": "On achète des pyjamas ou costumes coordonnés et on organise une vraie pyjama party.",
+    "theme": "pink-theme"
+  },
+  {
+    "id": "date-card-47",
+    "title": "Color hunt",
+    "email_title": "Color hunt",
+    "category": ["Jeux 🎮", "Aventure 🧭"],
+    "description": "On choisit une couleur, on part en balade et on cherche le plus de choses possibles de cette couleur.",
+    "theme": "purple-theme"
+  },
+  {
+    "id": "date-card-48",
+    "title": "Cache-cache en supermarché",
+    "email_title": "Cache-cache en supermarché",
+    "category": ["Insolite 🎭", "Jeux 🎮"],
+    "description": "On joue à cache-cache dans un supermarché et on finit forcément par rire.",
+    "theme": "yellow-theme"
+  },
+  {
+    "id": "date-card-49",
+    "title": "Balade en forêt et bouquet",
+    "email_title": "Balade en forêt et bouquet",
+    "category": ["Aventure 🧭", "Romantique 🕯️"],
+    "description": "On part en forêt et on crée le plus beau bouquet de fleurs pour l'autre.",
+    "theme": "green-theme"
   }
-
-
-
-
-
 ]

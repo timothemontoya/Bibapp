@@ -10,16 +10,15 @@ const EMAILJS_TEMPLATE_ID = "template_rla96gu";
 
 const CATEGORY_GRADIENTS = {
   "Chill": "linear-gradient(135deg, #e66666, #f9e80040)",
-  "Sportif": "linear-gradient(135deg, #b973f7, #321f5833)",
-  "Découverte": "linear-gradient(135deg, #3ea182, #48956544)",
-  "Nuit": "linear-gradient(135deg, #131746, #bea93f64)",
-  "Voyage": "linear-gradient(135deg, #FF9900, #ff550044)",
+  "Créatif": "linear-gradient(135deg, #FF6B00, #321f5833)",
+  "Découverte": "linear-gradient(135deg, #FFD166, #fc470044)",
+  "Détente": "linear-gradient(135deg, #2DD4BF, #6aff0044)",
   "Erotique": "linear-gradient(135deg, #f83636, #000000c2)",
   "Romantique": "linear-gradient(135deg, #ff758c, #ffb4d33f)",
-  "Discussion": "linear-gradient(135deg, #d2d2d2, #595c6044)",
+  "Insolite": "linear-gradient(135deg, #4400ff, #ff8a0444)",
   "Aventure": "linear-gradient(135deg, #1e4e00, #70ff485a)",
-  "Exterieur": "linear-gradient(135deg, #96e8ff, #0073ff6f)",
-  "Maison": "linear-gradient(135deg, #ffe2ab, #e076765a)",
+  "Jeux": "linear-gradient(135deg, #4CC9F0, #0073ff6f)",
+  "Maison": "linear-gradient(135deg, #8e99a7, #3e3e4c5a)",
 };
 
 // Couleur/Dégradé par défaut si la catégorie n'est pas dans le dictionnaire

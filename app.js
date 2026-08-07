@@ -46,6 +46,7 @@ let selectedBon = null;
 let bonIdToUse = null;
 let platsRoulette = platsDeBase.map(plat => ({ name: plat, isBase: true, active: true }));
 let currentRotation = 0;
+let bonFavoritesMap = {};
 
 if (SUPABASE_URL !== "https://TON_PROJET.supabase.co") {
   supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -250,7 +251,8 @@ async function initApp() {
   await Promise.all([
     chargerPhrases(),
     chargerDates(),
-    chargerBons()
+    chargerBons(),
+    chargerBonFavorites()
   ]);
 
   initAppEvents();
@@ -409,6 +411,19 @@ async function chargerBons() {
   }
 }
 
+async function chargerBonFavorites() {
+  if (!supabaseClient) return;
+  const { data, error } = await supabaseClient.from('bon_favorites').select('*');
+  if (error) {
+    console.error("Erreur favoris des bons :", error);
+    return;
+  }
+  bonFavoritesMap = {};
+  if (data) {
+    data.forEach(row => { bonFavoritesMap[row.bon_id] = row.is_favorite; });
+  }
+}
+
 // ==========================================
 // 🎛️ FILTRES DE CATÉGORIES
 // ==========================================
@@ -530,11 +545,23 @@ function genererCartesDates() {
     return dateMatchesCategoryFilter(date);
   });
 
-  filteredDates.forEach(date => {
+  // Les favoris remontent en haut de la liste
+  const sortedDates = [...filteredDates].sort((a, b) => {
+    const favA = cardsStateMap[a.id]?.is_favorite ? 1 : 0;
+    const favB = cardsStateMap[b.id]?.is_favorite ? 1 : 0;
+    return favB - favA;
+  });
+
+  sortedDates.forEach(date => {
     const state = cardsStateMap[date.id] || {};
     const buttonHtml = activeSubTab === 'todo' 
-      ? `<button class="btn-validate" onclick="openCompleteModal(event, '${date.id}')">Marquer comme fait ! ✅</button>` 
-      : `<button class="btn-validate" style="background:#5856d6;" onclick="openViewMemoryModal(event, '${date.id}')">📸 Nos Souvenirs</button>`;
+      ? `<button class="btn-validate" onclick="openCompleteModal(event, '${date.id}')">Terminé ! ✅</button>` 
+      : `<button class="btn-validate" style="background:#5856d6;" onclick="openViewMemoryModal(event, '${date.id}')">📸 Souvenir</button>`;
+    const favoriteHtml = state.is_revealed
+      ? `<button class="favorite-btn ${state.is_favorite ? 'active' : ''}" onclick="toggleFavoriteDate(event, '${date.id}')" aria-label="Mettre en favori">
+          <i class="${state.is_favorite ? 'ph-fill' : 'ph'} ph-star icon-emoji"></i>
+        </button>`
+      : '';
 
     const cardHtml = `
       <div class="card-wrapper ${state.is_revealed ? 'flipped' : ''}" id="${date.id}" data-id="${date.id}">
@@ -543,6 +570,7 @@ function genererCartesDates() {
             <div class="question-mark">?</div>
           </div>
           <div class="card-back ${date.theme || 'pink-theme'}">
+            ${favoriteHtml}
             <h3>${date.title}</h3>
             <p>${date.description}</p>
             <div style="margin-top: auto;">${buttonHtml}</div>
@@ -552,6 +580,52 @@ function genererCartesDates() {
     `;
     grid.insertAdjacentHTML('beforeend', cardHtml);
   });
+}
+
+async function toggleFavoriteDate(event, cardId) {
+  if (event) { event.stopPropagation(); event.preventDefault(); }
+
+  if (!cardsStateMap[cardId]) cardsStateMap[cardId] = { card_id: cardId };
+  const newValue = !cardsStateMap[cardId].is_favorite;
+  cardsStateMap[cardId].is_favorite = newValue;
+
+  if (activeCardId) {
+    // Une carte est ouverte en grand : on ne reconstruit pas toute la grille
+    // (ça casserait la carte affichée), on met juste à jour l'étoile et on
+    // reporte le tri à la fermeture de la carte.
+    updateFavoriteButtonUI(cardId, newValue);
+    pendingGridRefresh = true;
+  } else {
+    genererCartesDates();
+  }
+
+  if (!supabaseClient) return;
+
+  const { error } = await supabaseClient.from('cards_state').upsert({
+    card_id: cardId,
+    is_favorite: newValue
+  }, { onConflict: 'card_id' });
+
+  if (error) {
+    console.error("Erreur favori :", error);
+    showToast("⚠️ Le favori n'a pas pu être enregistré.");
+    cardsStateMap[cardId].is_favorite = !newValue;
+    if (activeCardId) {
+      updateFavoriteButtonUI(cardId, !newValue);
+    } else {
+      genererCartesDates();
+    }
+  }
+}
+
+function updateFavoriteButtonUI(cardId, isFavorite) {
+  const cardElement = document.getElementById(cardId);
+  if (!cardElement) return;
+  const btn = cardElement.querySelector('.favorite-btn');
+  if (!btn) return;
+  btn.classList.toggle('active', isFavorite);
+  const icon = btn.querySelector('i');
+  if (icon) icon.className = `${isFavorite ? 'ph-fill' : 'ph'} ph-star icon-emoji`;
 }
 
 function setCategoryMatchMode(mode) {
@@ -1002,10 +1076,19 @@ async function renderInventory() {
   const counts = {};
   data.forEach(row => { counts[row.bon_id] = (counts[row.bon_id] || 0) + 1; });
 
+  // Les favoris remontent en haut de la liste
+  const sortedBonIds = Object.keys(counts).sort((a, b) => {
+    const favA = bonFavoritesMap[a] ? 1 : 0;
+    const favB = bonFavoritesMap[b] ? 1 : 0;
+    return favB - favA;
+  });
+
   inventoryDiv.innerHTML = '';
-  Object.keys(counts).forEach(bonId => {
+  sortedBonIds.forEach(bonId => {
     const bon = bonsData.find(b => b.id === bonId);
     if (!bon) return;
+
+    const isFavorite = !!bonFavoritesMap[bonId];
 
     const html = `
       <div class="card token-card" id="owned-${bon.id}" style="border-radius: 18px; margin-bottom: 12px; padding: 15px;">
@@ -1017,12 +1100,39 @@ async function renderInventory() {
               <p style="font-size: 12px; color: var(--text-secondary); margin: 2px 0 0 0;">Quantité : <strong>x${counts[bonId]}</strong></p>
             </div>
           </div>
-          <button class="btn-primary" onclick="openUseBonModal('${bon.id}')" style="padding: 8px 16px; font-size: 13px; border-radius: 10px; width: 8em;">Utiliser <i class="ph-fill ph-sparkle"></i></button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button class="favorite-btn favorite-btn-inline ${isFavorite ? 'active' : ''}" onclick="toggleBonFavorite(event, '${bon.id}')" aria-label="Mettre en favori">
+              <i class="${isFavorite ? 'ph-fill' : 'ph'} ph-star icon-emoji"></i>
+            </button>
+            <button class="btn-primary" onclick="openUseBonModal('${bon.id}')" style="padding: 8px 16px; font-size: 13px; border-radius: 10px; width: 8em;">Utiliser <i class="ph-fill ph-sparkle"></i></button>
+          </div>
         </div>
       </div>
     `;
     inventoryDiv.insertAdjacentHTML('beforeend', html);
   });
+}
+
+async function toggleBonFavorite(event, bonId) {
+  if (event) { event.stopPropagation(); event.preventDefault(); }
+
+  const newValue = !bonFavoritesMap[bonId];
+  bonFavoritesMap[bonId] = newValue;
+  await renderInventory();
+
+  if (!supabaseClient) return;
+
+  const { error } = await supabaseClient.from('bon_favorites').upsert({
+    bon_id: bonId,
+    is_favorite: newValue
+  }, { onConflict: 'bon_id' });
+
+  if (error) {
+    console.error("Erreur favori bon :", error);
+    showToast("⚠️ Le favori n'a pas pu être enregistré.");
+    bonFavoritesMap[bonId] = !newValue;
+    await renderInventory();
+  }
 }
 
 function openUseBonModal(bonId) {

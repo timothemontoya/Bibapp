@@ -343,7 +343,7 @@ html {
   border-radius: 24px;
   border: var(--border);
   padding: 20px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   box-shadow: var(--shadow);
 }
 
@@ -521,6 +521,14 @@ html {
 
 .dates-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; padding-top: 16px; }
 
+.dates-counter {
+  margin: 12px 2px 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
 .card-placeholder {
   width: 100%; height: 220px; border-radius: 24px;
   background: var(--card-bg); border: 1px dashed rgba(255, 45, 85, 0.25);
@@ -550,6 +558,14 @@ html {
 .card-wrapper.flipped .btn-confirm-flip { display: none; }
 .card-wrapper.shake-locked .card-inner { animation: shake-locked 0.6s ease; }
 
+/* La carte agrandie ("focused") passe de 220px à 410px de haut :
+   le texte doit grandir avec elle, sinon il paraît minuscule dans la grande carte. */
+.card-wrapper.focused .card-back { padding: 60px 22px 22px 22px; }
+.card-wrapper.focused .card-back h3 { font-size: 22px; margin: 8px 0; }
+.card-wrapper.focused .card-back p { font-size: 15px; margin: 0 0 16px 0; }
+.card-wrapper.focused .btn-validate { padding: 12px 20px; font-size: 15px; border-radius: 14px; }
+.card-wrapper.focused .favorite-btn { width: 40px; height: 40px; top: 14px; right: 14px; font-size: 19px; }
+
 .card-front, .card-back {
   position: absolute; width: 100%; height: 100%;
   backface-visibility: hidden; border-radius: 24px;
@@ -557,7 +573,9 @@ html {
   padding: 15px; box-sizing: border-box;
 }
 .card-front { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color: white; }
-.card-back { background: var(--card-bg); color: var(--text-primary); transform: rotateY(180deg); text-align: center; justify-content: space-between; padding-top: 40px; }
+.card-back { background: var(--card-bg); color: var(--text-primary); transform: rotateY(180deg); text-align: center; padding-top: 40px; }
+.card-back-content { flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.card-back-action { width: 100%; }
 .card-back.pink-theme { border: 3px solid var(--ios-pink); }
 .card-back.red-theme { border: 3px solid var(--primary); }
 .card-back h3 { font-size: 16px; margin: 5px 0; }
@@ -709,7 +727,7 @@ html {
 .btn-random-heart {
   position: fixed; bottom: 95px; right: 20px; width: 60px; height: 60px;
   border-radius: 50%; background: #ffffff; border: none; box-shadow: 0 8px 24px rgba(255, 45, 85, 0.3);
-  cursor: pointer; z-index: 999; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 50; display: flex; align-items: center; justify-content: center;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .btn-random-heart:hover, .btn-random-heart:active { transform: scale(1.15) rotate(5deg); }

@@ -63,6 +63,8 @@ emailjs.init(EMAILJS_PUBLIC_KEY);
 // 🔐 AUTHENTIFICATION
 // ==========================================
 let appInitialized = false;
+let currentUserId = null;
+let currentUserEmail = null;
 
 function showAuthScreen() {
   document.getElementById('auth-screen')?.classList.remove('is-hidden');
@@ -120,12 +122,16 @@ function initAuth() {
   supabaseClient.auth.onAuthStateChange((event, session) => {
     hideAuthLoading();
     if (session) {
+      currentUserId = session.user.id;
+      currentUserEmail = session.user.email;
       showApp();
       if (!appInitialized) {
         appInitialized = true;
         initApp();
       }
     } else {
+      currentUserId = null;
+      currentUserEmail = null;
       appInitialized = false;
       showAuthScreen();
       const submitBtn = document.querySelector('#login-form .auth-submit');
@@ -545,6 +551,10 @@ function genererCartesDates() {
     return dateMatchesCategoryFilter(date);
   });
 
+  // Le total dépend des catégories actives (mais pas de l'onglet cachés/à faire/faits)
+  const totalInCategories = datesData.filter(date => dateMatchesCategoryFilter(date)).length;
+  updateDatesCounter(filteredDates.length, totalInCategories);
+
   // Les favoris remontent en haut de la liste
   const sortedDates = [...filteredDates].sort((a, b) => {
     const favA = cardsStateMap[a.id]?.is_favorite ? 1 : 0;
@@ -571,15 +581,30 @@ function genererCartesDates() {
           </div>
           <div class="card-back ${date.theme || 'pink-theme'}">
             ${favoriteHtml}
-            <h3>${date.title}</h3>
-            <p>${date.description}</p>
-            <div style="margin-top: auto;">${buttonHtml}</div>
+            <div class="card-back-content">
+              <h3>${date.title}</h3>
+              <p>${date.description}</p>
+            </div>
+            <div class="card-back-action">${buttonHtml}</div>
           </div>
         </div>
       </div>
     `;
     grid.insertAdjacentHTML('beforeend', cardHtml);
   });
+}
+
+function updateDatesCounter(count, total) {
+  const counterEl = document.getElementById('dates-counter');
+  if (!counterEl) return;
+
+  if (activeSubTab === 'hidden') {
+    counterEl.textContent = `Restant à révéler : ${count}/${total}`;
+  } else if (activeSubTab === 'todo') {
+    counterEl.textContent = `À faire : ${count}`;
+  } else if (activeSubTab === 'done') {
+    counterEl.textContent = `Terminés : ${count}/${total}`;
+  }
 }
 
 async function toggleFavoriteDate(event, cardId) {
@@ -706,10 +731,15 @@ function sendLoveEmail(dateName) {
 // ==========================================
 // 🎲 RANDOM DATE
 // ==========================================
+let isTriggeringRandomDate = false;
+
 function triggerRandomDate() {
+  if (isTriggeringRandomDate) return;
   if (activeCardId) closeActiveCard();
   const pool = datesData.filter(dateMatchesCategoryFilter);
   if (pool.length === 0) return;
+
+  isTriggeringRandomDate = true;
 
   const randomDate = pool[Math.floor(Math.random() * pool.length)];
   const state = cardsStateMap[randomDate.id] || {};
@@ -730,6 +760,7 @@ function triggerRandomDate() {
     } else {
       showToast("Cette carte n'est pas dans la catégorie visible actuelle !");
     }
+    isTriggeringRandomDate = false;
   }, 100);
 }
 
@@ -912,7 +943,7 @@ async function renderBonsTab() {
     dailyContainer.innerHTML = `
       <div class="card" style="text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #ffe3e8 0%, #ffccd5 100%); border: 2px solid #ffb3c1; border-radius: 24px;">
         <span style="font-size: 45px; display: block; margin-bottom: 10px; animation: bounceMini 2s infinite alternate;"><img src="assets/gift.png" alt="🎁" style="width: 20%; height: 20%;"></span>
-        <h3 style="color: #ff2d55; font-size: 18px; font-weight: bold; margin-top: 10px;">Ton Ticket Surprise est prêt !</h3>
+        <h3 style="color: #ff2d55; font-size: 18px; font-weight: bold;">Ton Ticket Surprise est prêt !</h3>
         <button class="btn-primary" onclick="openScratchModal()" style="background: #ff2d55; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3);">
           Gratter le ticket
         </button>
@@ -930,8 +961,8 @@ async function renderBonsTab() {
   // SUPPRIMER, c'est juste pour le démo, on veut que le ticket soit gratté tous les jours
   dailyContainer.innerHTML = `
       <div class="card" style="text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #ffe3e8 0%, #ffccd5 100%); border: 2px solid #ffb3c1; border-radius: 24px;">
-        <span style="font-size: 45px; display: block; margin-bottom: 5px; animation: bounceMini 2s infinite alternate;"><img src="assets/gift.gif" alt="🎁" style="width: 30%; height: 30%;"></span>
-        <h3 style="color: #ff2d55; font-size: 18px; font-weight: bold; margin-top: 5px;">Ton Ticket Surprise est prêt !</h3>
+        <span style="font-size: 45px; display: block; margin-bottom: 10px; animation: bounceMini 2s infinite alternate;"><img src="assets/gift.gif" alt="🎁" style="width: 30%; height: 30%;"></span>
+        <h3 style="color: #ff2d55; font-size: 18px; font-weight: bold;">Ton Ticket Surprise est prêt !</h3>
         <button class="btn-primary" onclick="openScratchModal()" style="background: #ff2d55; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.3);">
           Gratter le ticket
         </button>
@@ -1025,20 +1056,20 @@ function initScratchCanvas() {
     finishScratchLayer();
   };
   holoImg.onerror = () => {
-    // Image introuvable : on retombe sur le gris par défaut plutôt que de casser le jeu.
+    // Image introuvable : on retombe sur le gris par défaut, avec le texte
+    // (puisque contrairement à l'image, ce gris n'a rien d'écrit dessus).
     ctx.fillStyle = '#cfd8dc';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = 'bold 16px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#78909c';
+    ctx.fillText('GRATTE ICI !', canvas.width / 2, canvas.height / 2 + 5);
     finishScratchLayer();
   };
   holoImg.src = SCRATCH_HOLO_IMAGE;
 
   function finishScratchLayer() {
-    ctx.font = 'bold 16px -apple-system, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-    ctx.shadowBlur = 5;
-    ctx.shadowBlur = 0;
+    // Le texte "GRATTE ICI !" est déjà intégré dans l'image scratch-holo.png, pas besoin de le redessiner.
 
     // La couche du dessus est maintenant peinte : on peut révéler le prix en dessous sans risque de flash.
     document.querySelector('.scratch-prize-underlay')?.classList.add('ready');
@@ -1313,7 +1344,14 @@ function tirerBonPondere(listeBons) {
 // 🔥 STREAK & DAILY BOX
 // ==========================================
 async function checkStreak() {
-  const { data, error } = await supabaseClient.from('progress_tracker').select('*').single();
+  if (!currentUserId) return;
+
+  const { data, error } = await supabaseClient
+    .from('progress_tracker')
+    .select('*')
+    .eq('user_id', currentUserId)
+    .maybeSingle();
+
   const today = new Date();
   const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -1322,8 +1360,12 @@ async function checkStreak() {
   let streakBroken = false; // Nouvelle variable pour détecter la casse
 
   if (error || !data) {
-    // Toute première connexion
-    await supabaseClient.from('progress_tracker').insert({ current_streak: 1, last_connection: today.toISOString() });
+    // Toute première connexion de CET utilisateur
+    await supabaseClient.from('progress_tracker').insert({
+      user_id: currentUserId,
+      current_streak: 1,
+      last_connection: today.toISOString()
+    });
     document.getElementById('streak-count').textContent = "1";
     handleStreakMilestones(1, false); 
     return;
@@ -1343,9 +1385,9 @@ async function checkStreak() {
       current_streak: streak,
       last_connection: today.toISOString(),
       max_streak: Math.max(streak, data.max_streak || 0)
-    }).eq('id', data.id);
+    }).eq('user_id', currentUserId);
   } else if (diffDays > 1) {
-    // Si le streak précédent était > 1 et qu'elle a raté un jour, la chaîne est brisée
+    // Si le streak précédent était > 1 et qu'il/elle a raté un jour, la chaîne est brisée
     if (streak > 1) {
       streakBroken = true;
     }
@@ -1354,7 +1396,7 @@ async function checkStreak() {
     await supabaseClient.from('progress_tracker').update({
       current_streak: streak,
       last_connection: today.toISOString()
-    }).eq('id', data.id);
+    }).eq('user_id', currentUserId);
   }
 
   document.getElementById('streak-count').textContent = streak;
@@ -1404,7 +1446,7 @@ function handleStreakMilestones(streak, streakBroken) {
   if (isMilestone) {
     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       to_name: "Admin Love (Moi)",
-      message: `🔥 ALERTE RÉCOMPENSE ! Ta chérie vient d'atteindre le palier des ${streak} jours ! Prépare la surprise ! 🎁`
+      message: `🔥 ALERTE RÉCOMPENSE ! ${currentUserEmail || 'Un compte'} vient d'atteindre le palier des ${streak} jours ! Prépare la surprise ! 🎁`
     }).then(() => console.log("Email palier envoyé !"), (err) => console.error("Erreur email:", err));
   }
 }
